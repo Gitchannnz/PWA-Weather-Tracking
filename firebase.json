@@ -1,0 +1,29 @@
+{
+  "hosting": {
+    "site": "bakestermumshie",
+    "public": "dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/sitemap.xml",
+        "destination": "/sitemap.xml"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/version.json",
+        "destination": "/version.json"
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "firebase.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

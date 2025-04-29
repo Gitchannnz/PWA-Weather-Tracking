@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+   
+   // Rule for collections ending in "_website"
+    match /{collectionPath}/{document=**} {
+      // Allow read access to everyone for collections ending in "_website"
+      allow read: if collectionPath.matches('.*_website');
+      // Restrict write access to authenticated users only for collections ending in "_website"
+      allow write: if collectionPath.matches('.*_website') && request.auth != null;
+    }
+
+    // Rule for all other collections (requiring Firebase authentication)
+    match /{document=**} {
+      // Allow read and write access only if the user is authenticated
+      allow read, write: if request.auth != null;
+    }
+  }
+}

@@ -1,0 +1,1057 @@
+#root {
+
+  margin: 0 auto;
+
+ 
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+.pointer{
+  cursor: pointer;
+}
+
+.news_slider_list_layout{
+  width: 100%;
+  height: auto;
+  border-width: 1px;
+  border-color: #acacac;
+  border-style: solid;
+}
+.news_slider_list_layout:hover{
+  box-shadow: inset 0px 0px 10px #1b8c3d;
+}
+.ordinance_slider_list_layout{
+  width: 100%;
+  height: auto;
+
+}
+.ordinance_slider_list_layout:hover{
+  box-shadow: inset 0px 0px 10px #1b8c3d;
+}
+.service_item {
+  transition: box-shadow 0.3s ease, transform 0.3s ease; /* Smooth transition for shadow and elevation */
+}
+
+.service_item:hover {
+  box-shadow: 0 8px 16px #1b8c3d; /* Add shadow on hover */
+  transform: translateY(-5px); /* Slight elevation effect */
+}
+
+.btn-custom {
+  border: 2px solid #1b8c3d; /* Green border */
+  background-color: rgba(255, 255, 255, 0.8); /* White with slight transparency */
+  color: #1b8c3d; /* Green text */
+  padding: 10px 20px;
+  border-radius: 5px; /* Rounded corners (optional) */
+  transition: box-shadow 0.3s ease, background-color 0.3s ease; /* Smooth transition */
+
+}
+
+.btn-custom:hover {
+  background-color: rgba(255, 255, 255, 0.9); /* Slightly less transparent on hover */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Increase elevation on hover */
+  color: #1b8c3d; /* Ensure text color stays green on hover */
+   
+  border-color: #1b8c3d;
+  border-style: solid;
+  border-width: 1px;
+}
+
+/* Base styles for the image */
+.responsive-image {
+  width: 90%;
+  height: 500px;
+  object-fit: cover;
+  /* filter: brightness(0.7);  */
+  /* Optionally dim the image for better text contrast */
+}
+.image-holder{
+  width: 100%;
+  height: 500px;
+  display: flex;
+  justify-content: center;
+}
+/* Media query for mobile devices */
+@media (max-width: 768px) {
+  .responsive-image {
+    height: 400px; /* Resize the height for smaller screens */
+  }
+  .image-holder{
+    height: 430px;
+  }
+  .sub-nav-container {
+    display: none;
+  }
+  .footerDesign{
+    height: "200vh";
+  }
+}
+.footerDesign{
+  height: "100vh";
+}
+/* ResponsiveAppBar.css */
+.sub-nav-transition {
+ 
+  transform: translateY(-10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.sub-nav-transition:hover {
+  
+  transform: translateY(0);
+}
+
+.nav-item-hover{
+  color: black;
+}
+.nav-item-hover:hover{
+  color: #a44d06;
+}
+
+
+
+
+/* LAYOUT OF NEWS CSS */
+.responsive-image {
+  width: 93%;
+
+  object-fit:contain;
+  /* filter: brightness(0.7);  */
+  /* Optionally dim the image for better text contrast */
+}
+.sticky-div {
+  position: sticky; /* Make it sticky */
+  top: 0; /* Stick to the top of the container */
+  z-index: 1000; /* Ensure it is above other elements */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add your shadow styles */
+  background-color: white; /* Ensure visibility */
+  padding: 10px; /* Optional: some padding */
+}
+.autoScroll-ymod{
+  overflow-y: auto;
+  overflow-x: hidden;
+
+
+}
+.center-div{
+  /* margin: 0 200px 0 200px; */
+  justify-content: center;
+  align-items: center;
+  align-self: center;
+}
+@media (min-width:767px) {
+  .center-div{
+    margin: 0 0 0 0;
+    justify-content: center;
+    align-items: center;
+    align-self: center;
+  }
+}
+.hidden-div{
+ display: none;
+}
+.content-p{
+  white-space: pre-wrap;
+  text-align: justify;
+}
+#createNews{
+  overflow-y: hidden;
+  overflow-x: hidden;
+
+}
+.carousel-caption-bg{
+  text-shadow: 
+  1px 1px 1px black, 
+ -1px 1px 1px black, 
+  1px -1px 1px black, 
+ -1px -1px 1px black;
+}
+.tab-map-navigation-text{
+  font-size: x-small;
+}
+
+
+.skeleton {
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.skeleton-text {
+  height: 12px;
+  border-radius: 4px;
+}
+
+.skeleton-image {
+  width: 100%;
+  height: 250px;
+  border-radius: 8px;
+}
+
+.skeleton-image-slide {
+  width: 100%;
+  height: 300px;
+  border-radius: 8px;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Hero Section Styles */
+.hero-container {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background-image: url('/path/to/cyclone-image.jpg'); /* Replace with your actual cyclone image */
+  background-size: cover;
+  background-position: center;
+  background-color: #092a5e; /* Fallback color if image doesn't load */
+}
+
+.hero-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.2); /* Darkens the image slightly */
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  padding: 40px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: white;
+  margin: 0 0 8px 0;
+}
+
+.hero-subtitle {
+  font-size: 14px;
+  color: white;
+  margin: 0 0 16px 0;
+}
+
+.hero-button-container {
+  margin-top: 8px;
+}
+
+.view-cyclones-button {
+  background-color: white;
+  color: #1a4989;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.view-cyclones-button:hover {
+  background-color: #f0f0f0;
+}
+
+.eye-icon {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* Media Queries for Responsive Design */
+@media (min-width: 768px) {
+  .hero-container {
+    height: 240px;
+  }
+  
+  .hero-title {
+    font-size: 32px;
+  }
+  
+  .hero-subtitle {
+    font-size: 16px;
+  }
+}
+
+
+/* About Tropical Cyclones Page Styles */
+.about-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.about-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Info Box */
+.info-box {
+  display: flex;
+  background-color: #f0f7ff;
+  border-left: 4px solid #3b82f6;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 0 4px 4px 0;
+}
+
+.info-icon {
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.info-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #4a5568;
+}
+
+/* Content Section */
+.content-section p {
+  margin-bottom: 16px;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+/* Two Column Layout */
+.two-column-section {
+  display: flex;
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.map-column, .impact-column {
+  flex: 1;
+}
+
+/* Map Styles */
+.cyclone-map {
+  width: 100%;
+  border: 1px solid #ddd;
+  margin-bottom: 16px;
+}
+
+/* Regional Names */
+.regional-names h3 {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.regional-names p {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.region-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.region-list li {
+  margin-bottom: 8px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.region-list li::before {
+  content: "•";
+  color: #333;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+}
+
+.region {
+  font-weight: normal;
+}
+
+.cyclone-type {
+  font-weight: bold;
+}
+
+/* Impact Box */
+.impact-box {
+  background-color: #fff8e6;
+  border-left: 4px solid #f59e0b;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 0 4px 4px 0;
+}
+
+.warning-icon {
+  margin-bottom: 10px;
+}
+
+.impact-title {
+  font-size: 16px;
+  margin: 0 0 10px 0;
+  color: #92400e;
+}
+
+.impact-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #78350f;
+  margin: 0;
+}
+
+/* Categories Section */
+.categories-section h3 {
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+.category-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.category {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.category-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.super-typhoon {
+  background-color: #7e22ce; /* Purple */
+}
+
+.typhoon {
+  background-color: #db2777; /* Pink */
+}
+
+.severe-storm {
+  background-color: #ea580c; /* Orange */
+}
+
+.storm {
+  background-color: #eab308; /* Yellow */
+}
+
+.depression {
+  background-color: #3b82f6; /* Blue */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .two-column-section {
+    flex-direction: column;
+  }
+  
+  .map-column, .impact-column {
+    width: 100%;
+  }
+}
+
+/* Stay Informed CTA Section Styles */
+.cta-container {
+  background-color: #f5f5f5;
+  padding: 40px 20px;
+  text-align: center;
+  width: 100%;
+}
+
+.cta-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.cta-description {
+  font-size: 16px;
+  color: #555;
+  max-width: 600px;
+  margin: 0 auto 25px auto;
+  line-height: 1.5;
+}
+
+.cta-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.cta-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+}
+
+.primary-button {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.primary-button:hover {
+  background-color: #2563eb;
+}
+
+.secondary-button {
+  background-color: #4b5563;
+  color: white;
+}
+
+.secondary-button:hover {
+  background-color: #374151;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .cta-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .cta-button {
+    width: 100%;
+    max-width: 250px;
+    margin: 0 auto;
+  }
+}
+
+/* Footer Styles */
+.site-footer {
+  width: 100%;
+  background-color: #1e293b;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+/* Main footer section with quicklinks and info */
+.footer-main {
+  padding: 30px 0;
+  background-color: #0f172a;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.footer-section {
+  flex: 1;
+  padding: 0 15px;
+}
+
+.footer-heading {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #f3f4f6;
+}
+
+/* Quick Links */
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 8px;
+}
+
+.footer-links a {
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover {
+  color: #38bdf8;
+}
+
+/* Contact Information */
+.footer-contact {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-contact li {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.footer-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  margin-top: 2px;
+  color: #94a3b8;
+}
+
+/* Developer Information */
+.developer-info {
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.developer-info p {
+  margin: 0 0 6px 0;
+}
+
+.developer-info a {
+  color: #38bdf8;
+  text-decoration: none;
+}
+
+.developer-info a:hover {
+  text-decoration: underline;
+}
+
+/* Copyright Section */
+.footer-bottom {
+  background-color: #1e293b;
+  padding: 12px 0;
+  font-size: 12px;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.copyright-text {
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.data-source-text {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .footer-container {
+    flex-direction: column;
+  }
+  
+  .footer-section {
+    margin-bottom: 25px;
+  }
+  
+  .footer-content {
+    padding: 0 15px;
+  }
+  
+  .data-source-text {
+    max-width: 90%;
+  }
+}
+
+.about-header {
+  text-align: center;
+  padding: 2rem;
+  background-color: #f8f8f8; /* Light background, adjust as needed */
+}
+
+.about-title {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.about-subtitle {
+  font-size: 1.2rem;
+  color: #666;
+  font-style: italic;
+}
+
+
+/* About Page Styles */
+.about-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.about-content {
+  margin-top: 2rem;
+  padding: 2rem;
+  background-color: #fff9f2;
+  border-radius: 8px;
+}
+
+.about-content h2 {
+  font-family: 'Playfair Display', serif;
+  color: #5a3921;
+  margin-bottom: 1rem;
+}
+
+.about-content p {
+  font-family: 'Montserrat', sans-serif;
+  color: #7a5c3c;
+  line-height: 1.6;
+}
+
+
+/* Our Values Section */
+.values-section {
+  padding: 3rem 1rem;
+  font-family: 'Arial', sans-serif;
+  text-align: center;
+  background-color: #fff;
+  color: #333;
+}
+
+.values-main-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #7b3f00; /* Deep brown */
+  margin-bottom: 0.5rem;
+}
+
+.values-subtitle {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 2.5rem;
+}
+
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.value-card {
+  background-color: #fff7ea;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transition: transform 0.3s ease;
+}
+
+.value-card:hover {
+  transform: translateY(-4px);
+}
+
+.value-icon {
+  font-size: 1.8rem;
+  color: #e89c4f;
+  margin-bottom: 0.5rem;
+}
+
+.value-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #4d2c0c;
+  margin-bottom: 0.5rem;
+}
+
+.value-description {
+  font-size: 0.95rem;
+  color: #444;
+  line-height: 1.6;
+}
+
+/* Meet Our Team Section */
+.team-section {
+  padding: 4rem 1rem;
+  background-color: #fffdf5;
+  text-align: center;
+  font-family: 'Arial', sans-serif;
+}
+
+.team-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #7b3f00;
+  margin-bottom: 0.5rem;
+}
+
+.team-subtitle {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 2.5rem;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  justify-items: center;
+}
+
+.team-card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+  max-width: 300px;
+  text-align: left;
+}
+
+.team-image {
+  width: 100%;
+  height: 250px; /* fixed height */
+  object-fit: cover; /* crops excess but fills the container */
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+
+/* Tropical Cyclones Page CSS with Fixed Spacing */
+
+.tropical-cyclones-container {
+  font-family: Arial, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f7f9fc;
+}
+
+.about-section h2 {
+  margin-top: 0;
+  padding: 10px 0;
+  color: #000;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.info-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.question-section {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.icon {
+  margin-right: 12px;
+  font-size: 1.5rem;
+  color: #3498db;
+}
+
+.question-icon {
+  color: #3498db;
+}
+
+h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #000;
+}
+
+p {
+  line-height: 1.6;
+  margin-bottom: 20px;
+  font-size: 1rem;
+  color: #000;
+}
+
+/* Fix spacing between paragraphs */
+.info-card p {
+  margin-top: 0;
+}
+
+.definition-box {
+  background-color: #f8f9fa;
+  border-left: 4px solid #3498db;
+  padding: 16px 20px;
+  margin: 24px 0;
+}
+
+.definition-box p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.cyclone-image {
+  width: 100%;
+  margin: 24px 0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cyclone-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.info-columns {
+  display: flex;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.info-column {
+  flex: 1;
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.region-icon, .formation-icon {
+  color: #3498db;
+}
+
+.region-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.region-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.region-label {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.region-area {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.hurricanes {
+  background-color: #e3f2fd;
+}
+
+.cyclones {
+  background-color: #e8f5e9;
+}
+
+.willy-willy {
+  background-color: #fff3e0;
+}
+
+.typhoons {
+  background-color: #f3e5f5;
+}
+
+@media (max-width: 768px) {
+  .info-columns {
+    flex-direction: column;
+  }
+  
+  .info-card {
+    padding: 20px;
+  }
+}
