@@ -2,6 +2,7 @@ import React from "react";
 import Navigation from "../../navigations/NavBar/Navigation_main";
 import Footer from "../../navigations/Footer/Footer_main"; 
 import CycloneImage from "../../assets/Cyclone.png"
+import TyphoonPreparedness from "./Preparedness/TyphoonPreparedness";
 
 const TropicalCyclones = () => {
   return (
@@ -125,6 +126,7 @@ const TropicalCyclones = () => {
           </div>
         </div>
       </div>
+      <TyphoonPreparedness/>
       <Footer />
     </>
   );
