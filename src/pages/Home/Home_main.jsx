@@ -4,6 +4,7 @@ import HeroSection_main from "./Components/HeroSection/HeroSection";
 import FeaturedProduct from "./AboutTropical/AboutTropicalCyclones";
 import CallToAction from "./Components/CallToAction/CallToAction";
 import AboutTropicalCyclones from "./AboutTropical/AboutTropicalCyclones";
+import Weather_main from "./Weather/Weather_main";
 
 
 
@@ -80,6 +81,7 @@ export default function Home_main() {
         <Suspense fallback={<></>}>
           <Navigation_main />
           <HeroSection_main />
+          <Weather_main/>
           <AboutTropicalCyclones/>
           <CallToAction />
           <Footer_main />
