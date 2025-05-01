@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "bakestermumshie",
+    "site": "cyclonetracker",
     "public": "dist",
     "ignore": [
       "firebase.json",

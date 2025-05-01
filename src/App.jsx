@@ -19,6 +19,8 @@ import { HelmetProvider } from "react-helmet-async";
 
 import TropicalCyclones from "./pages/AboutCyclone/TropicalCyclones";
 import { Toaster } from "react-hot-toast";
+import HeroSection from "./pages/Home/Components/HeroSection/HeroSection";
+import TrackingSection_main from "./pages/Tracking/TrackingSection_main"
 
 function App() {
   const [routes_, setRoutes_] = useState(routes_main());
@@ -74,26 +76,31 @@ function MainRoutes({ routes_, sub_routes_ }) {
 
   return (
     <Routes>
-      {/* Render main app routes */}
+      {/* Main app routes */}
       {routes_.map((item, index) => (
         <Route key={index} path={item.path} element={item.element} />
       ))}
 
-      {/* Render sub routes */}
+      {/* Sub routes */}
       {sub_routes_.map((item, index) => (
         <Route key={index} path={item.path} element={item.element} />
       ))}
 
-      {/* Example custom route for Tropical Cyclones */}
+      {/* Tropical Cyclones page */}
       <Route path="/tropical-cyclones" element={<TropicalCyclones />} />
+
+      {/* Add these two lines here */}
+      <Route path="/hero" element={<HeroSection />} />
+      <Route path="/tracking" element={<TrackingSection_main />} />
 
       {/* Default route */}
       <Route path="/" element={<Navigate to="/home" />} />
 
-      {/* Catch-all route */}
+      {/* Catch-all */}
       {!isAssetRequest && <Route path="*" element={<Navigate to="/" />} />}
     </Routes>
   );
 }
+
 
 export default App;

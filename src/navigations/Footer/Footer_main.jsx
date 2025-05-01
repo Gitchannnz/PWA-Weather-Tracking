@@ -13,9 +13,6 @@ const Footer = () => {
                 <a href="/home">Home</a>
               </li>
               <li>
-                <a href="/about">About</a>
-              </li>
-              <li>
                 <a href="/cyclone-info">Cyclone Info</a>
               </li>
               <li>
@@ -89,19 +86,8 @@ const Footer = () => {
           <div className="footer-section">
             <h3 className="footer-heading">Developed By</h3>
             <div className="developer-info">
-              <p>AXZTECH Solutions</p>
-              <p>Advanced Weather Monitoring Systems</p>
+              <p>Ronald O. Mancao</p>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="footer-bottom">
-        <div className="footer-content">
-          <div className="copyright-text">© 2025, Tropical Cyclone Tracker</div>
-          <div className="data-source-text">
-            Data sourced from PAGASA - Philippine Atmospheric, Geophysical and
-            Astronomical Services Administration
           </div>
         </div>
       </div>

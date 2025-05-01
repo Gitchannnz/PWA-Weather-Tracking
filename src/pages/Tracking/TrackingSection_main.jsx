@@ -1,32 +1,77 @@
 import React, { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-import { Cloud, Wind, Droplet, Thermometer } from 'lucide-react';
+import {
+  MapContainer,
+  TileLayer,
+  Polyline,
+  Marker,
+  Popup,
+} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import { Cloud, Wind, Droplet, Thermometer } from "lucide-react";
 import Footer from "../../navigations/Footer/Footer_main";
-import NavBar from "../../navigations/NavBar/Navigation_main"
+import NavBar from "../../navigations/NavBar/Navigation_main";
+import { initializeApp } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 
+// Initialize Firebase
+const firebaseConfig = {
+  apiKey: "b47fba205d86b1e6f7dddfd426314b54",
+  authDomain: "pwa-weather-fc152.firebaseapp.com",
+  projectId: "pwa-weather-fc152",
+  storageBucket: "pwa-weather-fc152.firebasestorage.app",
+  messagingSenderId: "961887500010",
+  appId: "1:961887500010:web:dff8c480df5fb833cc8993",
+};
 
+// Fix: Check if Firebase app already exists, and if not, initialize it
+let app;
+try {
+  // Try to get the existing default app
+  app = initializeApp(firebaseConfig, "typhoon-tracker");
+} catch (error) {
+  if (error.code === "app/duplicate-app") {
+    // If a app with this name already exists, use that one
+    console.log("Using existing Firebase app instance");
+    app = initializeApp(firebaseConfig, "typhoon-tracker-" + Math.random().toString(36).substring(2, 9));
+  } else {
+    // Re-throw if it's another error
+    throw error;
+  }
+}
+
+const db = getFirestore(app);
+
+// Fix Leaflet icon issue
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
-
-
 
 const createTyphoonIcon = (color) => {
   return new L.Icon({
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    iconUrl:
+      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    shadowUrl:
+      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
     shadowSize: [41, 41],
     shadowAnchor: [12, 41],
-    className: 'typhoon-marker',
-    color: color
+    className: "typhoon-marker",
+    color: color,
   });
 };
 
@@ -39,33 +84,70 @@ function PhilippineTyphoonTracker() {
   const [currentWeather, setCurrentWeather] = useState(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
 
-
   const weatherApiKey = "b47fba205d86b1e6f7dddfd426314b54";
-
- 
   const years = ["2018", "2019", "2020", "2021", "2022", "2023"];
-
-
-  const mapCenter = [12.8797, 121.7740]; 
+  const mapCenter = [12.8797, 121.774];
   const mapZoom = 6;
 
   useEffect(() => {
-  
     const fetchTyphoonData = async () => {
       setLoading(true);
       try {
-       
-        const simulatedData = simulateTyphoonData(selectedYear);
-        setTyphoons(simulatedData);
+        // Try to fetch data from Firebase
+        const typhoonData = await fetchTyphoonDataFromFirebase(selectedYear);
+
+        // If no data in Firebase or error, fall back to simulated data
+        if (typhoonData.length === 0) {
+          const simulatedData = simulateTyphoonData(selectedYear);
+          setTyphoons(simulatedData);
+        } else {
+          setTyphoons(typhoonData);
+        }
         setLoading(false);
       } catch (err) {
-        setError("Failed to fetch typhoon data. Please try again later.");
+        console.error("Error fetching typhoon data:", err);
+        // Fall back to simulated data on error
+        const simulatedData = simulateTyphoonData(selectedYear);
+        setTyphoons(simulatedData);
+        setError(
+          "Failed to fetch typhoon data from database. Using simulated data."
+        );
         setLoading(false);
       }
     };
 
     fetchTyphoonData();
   }, [selectedYear]);
+
+  // Function to fetch typhoon data from Firebase
+  const fetchTyphoonDataFromFirebase = async (year) => {
+    try {
+      const typhoonRef = collection(db, "typhoons");
+      const q = query(typhoonRef, where("year", "==", year));
+      const querySnapshot = await getDocs(q);
+
+      const typhoonData = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        typhoonData.push({
+          id: doc.id,
+          name: data.name,
+          date: data.date,
+          category: data.category,
+          path: data.path,
+          affectedAreas: data.affectedAreas,
+          maxWinds: data.maxWinds,
+          color: data.color,
+          description: data.description,
+        });
+      });
+
+      return typhoonData;
+    } catch (error) {
+      console.error("Error fetching from Firebase:", error);
+      return [];
+    }
+  };
 
   // Fetch current weather data when a typhoon is selected
   useEffect(() => {
@@ -78,7 +160,11 @@ function PhilippineTyphoonTracker() {
 
   // Function to fetch weather data for selected typhoon's affected areas
   const fetchWeatherData = async () => {
-    if (!selectedTyphoon || !selectedTyphoon.affectedAreas || selectedTyphoon.affectedAreas.length === 0) {
+    if (
+      !selectedTyphoon ||
+      !selectedTyphoon.affectedAreas ||
+      selectedTyphoon.affectedAreas.length === 0
+    ) {
       return;
     }
 
@@ -87,11 +173,13 @@ function PhilippineTyphoonTracker() {
       // Using the first affected area as a reference point for weather
       const area = selectedTyphoon.affectedAreas[0] + ", Philippines";
       const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(area)}&units=metric&appid=${weatherApiKey}`
+        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
+          area
+        )}&units=metric&appid=${weatherApiKey}`
       );
 
       if (!response.ok) {
-        throw new Error('Weather data not available');
+        throw new Error("Weather data not available");
       }
 
       const data = await response.json();
@@ -104,7 +192,7 @@ function PhilippineTyphoonTracker() {
     }
   };
 
-  // Function to simulate typhoon data
+  // Function to simulate typhoon data for fallback
   const simulateTyphoonData = (year) => {
     // Sample typhoon data by year
     const typhoonsByYear = {
@@ -123,9 +211,8 @@ function PhilippineTyphoonTracker() {
           affectedAreas: ["Northern Luzon", "Central Luzon"],
           maxWinds: "175 km/h",
           color: "#ef4444",
-          damage: "₱4.2 billion",
-          casualties: "17 confirmed deaths",
-          description: "Super Typhoon Egay brought intense rainfall and widespread flooding to Northern Luzon."
+          description:
+            "Super Typhoon Egay brought intense rainfall and widespread flooding to Northern Luzon.",
         },
         {
           id: "chedeng2023",
@@ -141,9 +228,8 @@ function PhilippineTyphoonTracker() {
           affectedAreas: ["Eastern Visayas", "Bicol Region"],
           maxWinds: "140 km/h",
           color: "#f97316",
-          damage: "₱1.8 billion",
-          casualties: "5 confirmed deaths",
-          description: "Typhoon Chedeng caused significant damage in Eastern Visayas with heavy rainfall and storm surges."
+          description:
+            "Typhoon Chedeng caused significant damage in Eastern Visayas with heavy rainfall and storm surges.",
         },
         {
           id: "butchoy2023",
@@ -159,9 +245,8 @@ function PhilippineTyphoonTracker() {
           affectedAreas: ["Eastern Visayas", "Caraga"],
           maxWinds: "85 km/h",
           color: "#10b981",
-          damage: "₱624 million",
-          casualties: "2 confirmed deaths",
-          description: "Tropical Storm Butchoy brought moderate rainfall to Eastern Visayas and Caraga regions."
+          description:
+            "Tropical Storm Butchoy brought moderate rainfall to Eastern Visayas and Caraga regions.",
         },
       ],
       2022: [
@@ -179,9 +264,8 @@ function PhilippineTyphoonTracker() {
           affectedAreas: ["Northern Luzon"],
           maxWinds: "150 km/h",
           color: "#f97316",
-          damage: "₱2.1 billion",
-          casualties: "10 confirmed deaths",
-          description: "Typhoon Florita caused significant flooding in Northern Luzon, particularly affecting agricultural areas."
+          description:
+            "Typhoon Florita caused significant flooding in Northern Luzon, particularly affecting agricultural areas.",
         },
         {
           id: "domeng2022",
@@ -197,9 +281,8 @@ function PhilippineTyphoonTracker() {
           affectedAreas: ["Eastern Visayas", "Bicol"],
           maxWinds: "95 km/h",
           color: "#10b981",
-          damage: "₱548 million",
-          casualties: "3 confirmed deaths",
-          description: "Tropical Storm Domeng brought moderate rainfall to Eastern Visayas and Bicol regions."
+          description:
+            "Tropical Storm Domeng brought moderate rainfall to Eastern Visayas and Bicol regions.",
         },
       ],
       2021: [
@@ -217,9 +300,8 @@ function PhilippineTyphoonTracker() {
           affectedAreas: ["Caraga", "Central Visayas", "Palawan"],
           maxWinds: "195 km/h",
           color: "#ef4444",
-          damage: "₱16.7 billion",
-          casualties: "409 confirmed deaths",
-          description: "Super Typhoon Odette was one of the strongest typhoons to hit the Philippines in 2021, causing widespread destruction."
+          description:
+            "Super Typhoon Odette was one of the strongest typhoons to hit the Philippines in 2021, causing widespread destruction.",
         },
         {
           id: "maring2021",
@@ -234,9 +316,8 @@ function PhilippineTyphoonTracker() {
           affectedAreas: ["Northern Luzon"],
           maxWinds: "100 km/h",
           color: "#f59e0b",
-          damage: "₱1.2 billion",
-          casualties: "11 confirmed deaths",
-          description: "Severe Tropical Storm Maring brought heavy rainfall to Northern Luzon causing flooding and landslides."
+          description:
+            "Severe Tropical Storm Maring brought heavy rainfall to Northern Luzon causing flooding and landslides.",
         },
       ],
       2020: [
@@ -254,9 +335,8 @@ function PhilippineTyphoonTracker() {
           affectedAreas: ["Bicol Region", "Central Luzon", "Metro Manila"],
           maxWinds: "155 km/h",
           color: "#f97316",
-          damage: "₱20.3 billion",
-          casualties: "67 confirmed deaths",
-          description: "Typhoon Ulysses caused severe flooding in Metro Manila and surrounding provinces."
+          description:
+            "Typhoon Ulysses caused severe flooding in Metro Manila and surrounding provinces.",
         },
         {
           id: "rolly2020",
@@ -272,9 +352,8 @@ function PhilippineTyphoonTracker() {
           affectedAreas: ["Bicol Region", "CALABARZON"],
           maxWinds: "225 km/h",
           color: "#ef4444",
-          damage: "₱20.5 billion",
-          casualties: "25 confirmed deaths",
-          description: "Super Typhoon Rolly was one of the strongest typhoons to hit the Philippines in 2020, causing extensive damage."
+          description:
+            "Super Typhoon Rolly was one of the strongest typhoons to hit the Philippines in 2020, causing extensive damage.",
         },
       ],
       2019: [
@@ -292,9 +371,8 @@ function PhilippineTyphoonTracker() {
           affectedAreas: ["Bicol Region", "CALABARZON", "MIMAROPA"],
           maxWinds: "175 km/h",
           color: "#f97316",
-          damage: "₱5.9 billion",
-          casualties: "17 confirmed deaths",
-          description: "Typhoon Tisoy caused significant damage in Bicol Region and Southern Luzon."
+          description:
+            "Typhoon Tisoy caused significant damage in Bicol Region and Southern Luzon.",
         },
         {
           id: "ursula2019",
@@ -310,9 +388,8 @@ function PhilippineTyphoonTracker() {
           affectedAreas: ["Eastern Visayas", "Western Visayas"],
           maxWinds: "140 km/h",
           color: "#f97316",
-          damage: "₱4.3 billion",
-          casualties: "28 confirmed deaths",
-          description: "Typhoon Ursula struck the Philippines on Christmas Eve, causing damage in Eastern and Western Visayas."
+          description:
+            "Typhoon Ursula struck the Philippines on Christmas Eve, causing damage in Eastern and Western Visayas.",
         },
       ],
       2018: [
@@ -330,9 +407,8 @@ function PhilippineTyphoonTracker() {
           affectedAreas: ["Northern Luzon"],
           maxWinds: "205 km/h",
           color: "#ef4444",
-          damage: "₱33.9 billion",
-          casualties: "82 confirmed deaths",
-          description: "Super Typhoon Ompong was one of the strongest typhoons to hit the Philippines in 2018, causing extensive damage in Northern Luzon."
+          description:
+            "Super Typhoon Ompong was one of the strongest typhoons to hit the Philippines in 2018, causing extensive damage in Northern Luzon.",
         },
         {
           id: "rosita2018",
@@ -348,9 +424,8 @@ function PhilippineTyphoonTracker() {
           affectedAreas: ["Northern Luzon"],
           maxWinds: "150 km/h",
           color: "#f97316",
-          damage: "₱4.9 billion",
-          casualties: "27 confirmed deaths",
-          description: "Typhoon Rosita caused significant damage in Northern Luzon, particularly in Isabela and Mountain Province."
+          description:
+            "Typhoon Rosita caused significant damage in Northern Luzon, particularly in Isabela and Mountain Province.",
         },
       ],
     };
@@ -395,415 +470,423 @@ function PhilippineTyphoonTracker() {
 
   return (
     <>
-    <div className="typhoon-tracker-container">
-      <NavBar />
-      <header className="tracker-header">
-        <h1>Philippine Typhoon Tracking</h1>
-        <div className="year-selector">
-          <label htmlFor="year-select">Select Year: </label>
-          <select
-            id="year-select"
-            value={selectedYear}
-            onChange={handleYearChange}
-          >
-            {years.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-        </div>
-      </header>
-
-      <main className="tracker-content">
-        <div className="map-container">
-          <h2>Annual Typhoon Tracks for {selectedYear}</h2>
-
-          <div className="year-tabs">
-            {years.map((year) => (
-              <button
-                key={year}
-                className={`year-tab ${selectedYear === year ? "active" : ""}`}
-                onClick={() => handleYearTabClick(year)}
-              >
-                {year}
-              </button>
-            ))}
+      <div className="typhoon-tracker-container">
+        <NavBar />
+        <header className="tracker-header">
+          <h1>Philippine Typhoon Tracking</h1>
+          <div className="year-selector">
+            <label htmlFor="year-select">Select Year: </label>
+            <select
+              id="year-select"
+              value={selectedYear}
+              onChange={handleYearChange}
+            >
+              {years.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
           </div>
+        </header>
 
-          {loading ? (
-            <div className="loading">Loading map data...</div>
-          ) : (
-            <div className="typhoon-map">
-              <MapContainer
-                center={mapCenter}
-                zoom={mapZoom}
-                style={{ height: "400px", width: "100%" }}
-              >
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
+        <main className="tracker-content">
+          <div className="map-container">
+            <h2>Annual Typhoon Tracks for {selectedYear}</h2>
 
-                {/* Render all typhoon paths */}
-                {typhoons.map((typhoon) => (
-                  <Polyline
-                    key={typhoon.id}
-                    positions={typhoon.path}
-                    color={typhoon.color || getCategoryColor(typhoon.category)}
-                    weight={
-                      selectedTyphoon && selectedTyphoon.id === typhoon.id
-                        ? 5
-                        : 3
-                    }
-                    opacity={
-                      selectedTyphoon && selectedTyphoon.id === typhoon.id
-                        ? 1
-                        : 0.7
-                    }
+            <div className="year-tabs">
+              {years.map((year) => (
+                <button
+                  key={year}
+                  className={`year-tab ${
+                    selectedYear === year ? "active" : ""
+                  }`}
+                  onClick={() => handleYearTabClick(year)}
+                >
+                  {year}
+                </button>
+              ))}
+            </div>
+
+            {loading ? (
+              <div className="loading">Loading map data...</div>
+            ) : (
+              <div className="typhoon-map">
+                <MapContainer
+                  center={mapCenter}
+                  zoom={mapZoom}
+                  style={{ height: "400px", width: "100%" }}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   />
-                ))}
 
-                {/* Render markers for the start and end of each typhoon path */}
-                {typhoons.map((typhoon) => (
-                  <React.Fragment key={`marker-${typhoon.id}`}>
-                    <Marker
-                      position={typhoon.path[0]}
-                      eventHandlers={{
-                        click: () => handleTyphoonSelect(typhoon),
-                      }}
-                    >
-                      <Popup>
-                        <div
-                          style={{ textAlign: "center", fontWeight: "bold" }}
-                        >
-                          {typhoon.name}
-                        </div>
-                        <div>Start: {typhoon.date}</div>
-                        <div>Category: {typhoon.category}</div>
-                        <div>Wind Speed: {typhoon.maxWinds}</div>
-                      </Popup>
-                    </Marker>
-                    <Marker
-                      position={typhoon.path[typhoon.path.length - 1]}
-                      eventHandlers={{
-                        click: () => handleTyphoonSelect(typhoon),
-                      }}
-                    >
-                      <Popup>
-                        <div
-                          style={{ textAlign: "center", fontWeight: "bold" }}
-                        >
-                          {typhoon.name}
-                        </div>
-                        <div>End point</div>
-                        <div>Affected: {typhoon.affectedAreas.join(", ")}</div>
-                      </Popup>
-                    </Marker>
-                  </React.Fragment>
-                ))}
-              </MapContainer>
+                  {/* Render all typhoon paths */}
+                  {typhoons.map((typhoon) => (
+                    <Polyline
+                      key={typhoon.id}
+                      positions={typhoon.path}
+                      color={
+                        typhoon.color || getCategoryColor(typhoon.category)
+                      }
+                      weight={
+                        selectedTyphoon && selectedTyphoon.id === typhoon.id
+                          ? 5
+                          : 3
+                      }
+                      opacity={
+                        selectedTyphoon && selectedTyphoon.id === typhoon.id
+                          ? 1
+                          : 0.7
+                      }
+                    />
+                  ))}
 
-              <div className="map-legend">
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "5px" }}
-                >
-                  <span
+                  {/* Render markers for the start and end of each typhoon path */}
+                  {typhoons.map((typhoon) => (
+                    <React.Fragment key={`marker-${typhoon.id}`}>
+                      <Marker
+                        position={typhoon.path[0]}
+                        eventHandlers={{
+                          click: () => handleTyphoonSelect(typhoon),
+                        }}
+                      >
+                        <Popup>
+                          <div
+                            style={{ textAlign: "center", fontWeight: "bold" }}
+                          >
+                            {typhoon.name}
+                          </div>
+                          <div>Start: {typhoon.date}</div>
+                          <div>Category: {typhoon.category}</div>
+                          <div>Wind Speed: {typhoon.maxWinds}</div>
+                        </Popup>
+                      </Marker>
+                      <Marker
+                        position={typhoon.path[typhoon.path.length - 1]}
+                        eventHandlers={{
+                          click: () => handleTyphoonSelect(typhoon),
+                        }}
+                      >
+                        <Popup>
+                          <div
+                            style={{ textAlign: "center", fontWeight: "bold" }}
+                          >
+                            {typhoon.name}
+                          </div>
+                          <div>End point</div>
+                          <div>
+                            Affected: {typhoon.affectedAreas.join(", ")}
+                          </div>
+                        </Popup>
+                      </Marker>
+                    </React.Fragment>
+                  ))}
+                </MapContainer>
+
+                <div className="map-legend">
+                  <div
                     style={{
-                      display: "inline-block",
-                      width: "20px",
-                      height: "3px",
-                      backgroundColor: "#ef4444",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
                     }}
-                  ></span>
-                  <span style={{ fontSize: "0.8rem" }}>Super Typhoon</span>
-                </div>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "5px" }}
-                >
-                  <span
+                  >
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: "20px",
+                        height: "3px",
+                        backgroundColor: "#ef4444",
+                      }}
+                    ></span>
+                    <span style={{ fontSize: "0.8rem" }}>Super Typhoon</span>
+                  </div>
+                  <div
                     style={{
-                      display: "inline-block",
-                      width: "20px",
-                      height: "3px",
-                      backgroundColor: "#f97316",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
                     }}
-                  ></span>
-                  <span style={{ fontSize: "0.8rem" }}>Typhoon</span>
-                </div>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "5px" }}
-                >
-                  <span
+                  >
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: "20px",
+                        height: "3px",
+                        backgroundColor: "#f97316",
+                      }}
+                    ></span>
+                    <span style={{ fontSize: "0.8rem" }}>Typhoon</span>
+                  </div>
+                  <div
                     style={{
-                      display: "inline-block",
-                      width: "20px",
-                      height: "3px",
-                      backgroundColor: "#f59e0b",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
                     }}
-                  ></span>
-                  <span style={{ fontSize: "0.8rem" }}>
-                    Severe Tropical Storm
-                  </span>
-                </div>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "5px" }}
-                >
-                  <span
+                  >
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: "20px",
+                        height: "3px",
+                        backgroundColor: "#f59e0b",
+                      }}
+                    ></span>
+                    <span style={{ fontSize: "0.8rem" }}>
+                      Severe Tropical Storm
+                    </span>
+                  </div>
+                  <div
                     style={{
-                      display: "inline-block",
-                      width: "20px",
-                      height: "3px",
-                      backgroundColor: "#10b981",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
                     }}
-                  ></span>
-                  <span style={{ fontSize: "0.8rem" }}>Tropical Storm</span>
+                  >
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: "20px",
+                        height: "3px",
+                        backgroundColor: "#10b981",
+                      }}
+                    ></span>
+                    <span style={{ fontSize: "0.8rem" }}>Tropical Storm</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-
-        <div className="typhoon-data-container">
-          <div className="typhoon-list-container">
-            <h2>Typhoons in {selectedYear}</h2>
-            {loading ? (
-              <div className="loading">Loading typhoon data...</div>
-            ) : error ? (
-              <div className="error">{error}</div>
-            ) : (
-              <ul className="typhoon-list">
-                {typhoons.length === 0 ? (
-                  <li className="no-data">
-                    No typhoon data available for this year
-                  </li>
-                ) : (
-                  typhoons.map((typhoon) => (
-                    <li
-                      key={typhoon.id}
-                      className={`typhoon-item ${
-                        selectedTyphoon && selectedTyphoon.id === typhoon.id
-                          ? "selected"
-                          : ""
-                      }`}
-                      onClick={() => handleTyphoonSelect(typhoon)}
-                    >
-                      <div>
-                        <div className="typhoon-name">{typhoon.name}</div>
-                        <div className="typhoon-date">{typhoon.date}</div>
-                      </div>
-                      <div
-                        className={`typhoon-category ${getCategoryClass(
-                          typhoon.category
-                        )}`}
-                      >
-                        {typhoon.category.split(" ").slice(-1)[0]}
-                      </div>
-                    </li>
-                  ))
-                )}
-              </ul>
             )}
           </div>
 
-          {selectedTyphoon && (
-            <div className="typhoon-details-container">
-              <h2>Typhoon Details</h2>
-              <div className="typhoon-details">
-                <div className="detail-item">
-                  <span className="detail-label">Name</span>
-                  <span className="detail-value">{selectedTyphoon.name}</span>
-                </div>
-
-                <div className="detail-item">
-                  <span className="detail-label">Date</span>
-                  <span className="detail-value">{selectedTyphoon.date}</span>
-                </div>
-
-                <div className="detail-item">
-                  <span className="detail-label">Category</span>
-                  <span className="detail-value">
-                    {selectedTyphoon.category}
-                  </span>
-                </div>
-
-                <div className="detail-item">
-                  <span className="detail-label">Maximum Wind Speed</span>
-                  <span className="detail-value">
-                    {selectedTyphoon.maxWinds}
-                  </span>
-                </div>
-
-                <div className="detail-item">
-                  <span className="detail-label">Damage</span>
-                  <span className="detail-value">{selectedTyphoon.damage}</span>
-                </div>
-
-                <div className="detail-item">
-                  <span className="detail-label">Casualties</span>
-                  <span className="detail-value">
-                    {selectedTyphoon.casualties}
-                  </span>
-                </div>
-
-                <div className="detail-item">
-                  <span className="detail-label">Affected Areas</span>
-                  <div className="affected-areas">
-                    {selectedTyphoon.affectedAreas.map((area, index) => (
-                      <span key={index} className="area-tag">
-                        {area}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="detail-item">
-                  <span className="detail-label">Description</span>
-                  <span className="detail-value">
-                    {selectedTyphoon.description}
-                  </span>
-                </div>
-
-                {/* Current Weather Section */}
-                {weatherLoading ? (
-                  <div className="loading">Loading weather data...</div>
-                ) : currentWeather ? (
-                  <div className="current-weather">
-                    <div className="weather-header">
-                      <span className="detail-label">
-                        Current Weather in {selectedTyphoon.affectedAreas[0]}
-                      </span>
-                      <img
-                        src={getWeatherIconUrl(currentWeather.weather[0].icon)}
-                        alt={currentWeather.weather[0].description}
-                        className="weather-icon"
-                      />
-                    </div>
-
-                    <div className="weather-details">
-                      <div className="weather-item">
-                        <Thermometer size={16} />
-                        <span>{Math.round(currentWeather.main.temp)}°C</span>
-                      </div>
-
-                      <div className="weather-item">
-                        <Wind size={16} />
-                        <span>
-                          {Math.round(currentWeather.wind.speed * 3.6)} km/h
-                        </span>
-                      </div>
-
-                      <div className="weather-item">
-                        <Droplet size={16} />
-                        <span>{currentWeather.main.humidity}%</span>
-                      </div>
-
-                      <div className="weather-item">
-                        <Cloud size={16} />
-                        <span>{currentWeather.weather[0].description}</span>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="typhoon-grid">
-          {!loading &&
-            typhoons.map((typhoon) => (
-              <div
-                key={typhoon.id}
-                className={`typhoon-card ${
-                  selectedTyphoon && selectedTyphoon.id === typhoon.id
-                    ? "selected"
-                    : ""
-                }`}
-                onClick={() => handleTyphoonSelect(typhoon)}
-                style={{
-                  border:
-                    selectedTyphoon && selectedTyphoon.id === typhoon.id
-                      ? `2px solid ${getCategoryColor(typhoon.category)}`
-                      : "1px solid #e2e8f0",
-                }}
-              >
-                <div className="card-header">
-                  <div className="card-name">{typhoon.name}</div>
-                  <div
-                    className={`card-category ${getCategoryClass(
-                      typhoon.category
-                    )}`}
-                  >
-                    {typhoon.category.split(" ").slice(-1)[0]}
-                  </div>
-                </div>
-
-                <div className="card-map">
-                  {/* Mini map visualization */}
-                  <div
-                    style={{
-                      height: "100%",
-                      backgroundColor: "#e2e8f0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      position: "relative",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {/* Path visualization */}
-                    <svg
-                      width="100%"
-                      height="100%"
-                      style={{ position: "absolute", top: 0, left: 0 }}
-                    >
-                      <path
-                        d={`M ${30 + Math.random() * 20} ${
-                          80 + Math.random() * 20
-                        } 
-                          C ${50 + Math.random() * 40} ${
-                          60 + Math.random() * 30
-                        }, 
-                            ${80 + Math.random() * 40} ${
-                          50 + Math.random() * 30
-                        }, 
-                            ${100 + Math.random() * 20} ${
-                          30 + Math.random() * 20
+          <div className="typhoon-data-container">
+            <div className="typhoon-list-container">
+              <h2>Typhoons in {selectedYear}</h2>
+              {loading ? (
+                <div className="loading">Loading typhoon data...</div>
+              ) : error ? (
+                <div className="error">{error}</div>
+              ) : (
+                <ul className="typhoon-list">
+                  {typhoons.length === 0 ? (
+                    <li className="no-data">
+                      No typhoon data available for this year
+                    </li>
+                  ) : (
+                    typhoons.map((typhoon) => (
+                      <li
+                        key={typhoon.id}
+                        className={`typhoon-item ${
+                          selectedTyphoon && selectedTyphoon.id === typhoon.id
+                            ? "selected"
+                            : ""
                         }`}
-                        stroke={
-                          typhoon.color || getCategoryColor(typhoon.category)
-                        }
-                        strokeWidth="3"
-                        fill="none"
-                      />
-                    </svg>
-                    <div className="mini-path-label">Path visualization</div>
-                  </div>
-                </div>
+                        onClick={() => handleTyphoonSelect(typhoon)}
+                      >
+                        <div>
+                          <div className="typhoon-name">{typhoon.name}</div>
+                          <div className="typhoon-date">{typhoon.date}</div>
+                        </div>
+                        <div
+                          className={`typhoon-category ${getCategoryClass(
+                            typhoon.category
+                          )}`}
+                        >
+                          {typhoon.category.split(" ").slice(-1)[0]}
+                        </div>
+                      </li>
+                    ))
+                  )}
+                </ul>
+              )}
+            </div>
 
-                <div className="card-info">
-                  <div className="card-detail">
-                    <span className="detail-item-label">Date:</span>
-                    <span className="detail-item-value">{typhoon.date}</span>
+            {selectedTyphoon && (
+              <div className="typhoon-details-container">
+                <h2>Typhoon Details</h2>
+                <div className="typhoon-details">
+                  <div className="detail-item">
+                    <span className="detail-label">Name</span>
+                    <span className="detail-value">{selectedTyphoon.name}</span>
                   </div>
-                  <div className="card-detail">
-                    <span className="detail-item-label">Max Winds:</span>
-                    <span className="detail-item-value">
-                      {typhoon.maxWinds}
+
+                  <div className="detail-item">
+                    <span className="detail-label">Date</span>
+                    <span className="detail-value">{selectedTyphoon.date}</span>
+                  </div>
+
+                  <div className="detail-item">
+                    <span className="detail-label">Category</span>
+                    <span className="detail-value">
+                      {selectedTyphoon.category}
                     </span>
                   </div>
-                  <div className="card-detail">
-                    <span className="detail-item-label">Damage:</span>
-                    <span className="detail-item-value">{typhoon.damage}</span>
+
+                  <div className="detail-item">
+                    <span className="detail-label">Maximum Wind Speed</span>
+                    <span className="detail-value">
+                      {selectedTyphoon.maxWinds}
+                    </span>
                   </div>
+
+                  <div className="detail-item">
+                    <span className="detail-label">Affected Areas</span>
+                    <div className="affected-areas">
+                      {selectedTyphoon.affectedAreas.map((area, index) => (
+                        <span key={index} className="area-tag">
+                          {area}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="detail-item">
+                    <span className="detail-label">Description</span>
+                    <span className="detail-value">
+                      {selectedTyphoon.description}
+                    </span>
+                  </div>
+
+                  {/* Current Weather Section */}
+                  {weatherLoading ? (
+                    <div className="loading">Loading weather data...</div>
+                  ) : currentWeather ? (
+                    <div className="current-weather">
+                      <div className="weather-header">
+                        <span className="detail-label">
+                          Current Weather in {selectedTyphoon.affectedAreas[0]}
+                        </span>
+                        <img
+                          src={getWeatherIconUrl(
+                            currentWeather.weather[0].icon
+                          )}
+                          alt={currentWeather.weather[0].description}
+                          className="weather-icon"
+                        />
+                      </div>
+
+                      <div className="weather-details">
+                        <div className="weather-item">
+                          <Thermometer size={16} />
+                          <span>{Math.round(currentWeather.main.temp)}°C</span>
+                        </div>
+
+                        <div className="weather-item">
+                          <Wind size={16} />
+                          <span>
+                            {Math.round(currentWeather.wind.speed * 3.6)} km/h
+                          </span>
+                        </div>
+
+                        <div className="weather-item">
+                          <Droplet size={16} />
+                          <span>{currentWeather.main.humidity}%</span>
+                        </div>
+
+                        <div className="weather-item">
+                          <Cloud size={16} />
+                          <span>{currentWeather.weather[0].description}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
-            ))}
-        </div>
-      </main>
-    </div>
-    <Footer/>
+            )}
+          </div>
+
+          <div className="typhoon-grid">
+            {!loading &&
+              typhoons.map((typhoon) => (
+                <div
+                  key={typhoon.id}
+                  className={`typhoon-card ${
+                    selectedTyphoon && selectedTyphoon.id === typhoon.id
+                      ? "selected"
+                      : ""
+                  }`}
+                  onClick={() => handleTyphoonSelect(typhoon)}
+                  style={{
+                    border:
+                      selectedTyphoon && selectedTyphoon.id === typhoon.id
+                        ? `2px solid ${getCategoryColor(typhoon.category)}`
+                        : "1px solid #e2e8f0",
+                  }}
+                >
+                  <div className="card-header">
+                    <div className="card-name">{typhoon.name}</div>
+                    <div
+                      className={`card-category ${getCategoryClass(
+                        typhoon.category
+                      )}`}
+                    >
+                      {typhoon.category.split(" ").slice(-1)[0]}
+                    </div>
+                  </div>
+
+                  <div className="card-map">
+                    {/* Mini map visualization */}
+                    <div
+                      style={{
+                        height: "100%",
+                        backgroundColor: "#e2e8f0",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        position: "relative",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {/* Path visualization */}
+                      <svg
+                        width="100%"
+                        height="100%"
+                        style={{ position: "absolute", top: 0, left: 0 }}
+                      >
+                        <path
+                          d={`M ${30 + Math.random() * 20} ${
+                            80 + Math.random() * 20
+                          } 
+                          C ${50 + Math.random() * 40} ${
+                            60 + Math.random() * 30
+                          }, 
+                            ${80 + Math.random() * 40} ${
+                            50 + Math.random() * 30
+                          }, 
+                            ${100 + Math.random() * 20} ${
+                            30 + Math.random() * 20
+                          }`}
+                          stroke={
+                            typhoon.color || getCategoryColor(typhoon.category)
+                          }
+                          strokeWidth="3"
+                          fill="none"
+                        />
+                      </svg>
+                      <div className="mini-path-label">Path visualization</div>
+                    </div>
+                  </div>
+
+                  <div className="card-info">
+                    <div className="card-detail">
+                      <span className="detail-item-label">Date:</span>
+                      <span className="detail-item-value">{typhoon.date}</span>
+                    </div>
+                    <div className="card-detail">
+                      <span className="detail-item-label">Max Winds:</span>
+                      <span className="detail-item-value">
+                        {typhoon.maxWinds}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </main>
+      </div>
+      <Footer />
     </>
   );
 }

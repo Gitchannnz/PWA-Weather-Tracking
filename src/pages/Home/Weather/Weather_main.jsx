@@ -8,8 +8,11 @@ import {
   Wind,
   Droplets,
   Thermometer,
+  MapPin,
+  Loader,
 } from "lucide-react";
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const WeatherApp = () => {
   const [weatherData, setWeatherData] = useState(null);
@@ -19,19 +22,108 @@ const WeatherApp = () => {
   const [error, setError] = useState(null);
   const [unit, setUnit] = useState("C");
   const [activeTab, setActiveTab] = useState("Temperature");
-
-  // Location for Manolo Fortich, Philippines
-  const location = {
-    city: "Manolo Fortich",
-    country: "PH",
-    lat: 8.3675,
-    lon: 124.8644,
-  };
+  const [location, setLocation] = useState(null);
+  const [locationLoading, setLocationLoading] = useState(true);
+  const [locationError, setLocationError] = useState(null);
 
   const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
 
+  // Get user's location
+  useEffect(() => {
+    const getUserLocation = () => {
+      setLocationLoading(true);
+      setLocationError(null);
+
+      if (!navigator.geolocation) {
+        setLocationError("Geolocation is not supported by your browser");
+        setLocationLoading(false);
+        // Fallback to default location
+        setLocation({
+          city: "Loading city...",
+          country: "",
+          lat: 8.3675,
+          lon: 124.8644,
+        });
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const { latitude, longitude } = position.coords;
+
+            // Get location name from coordinates using reverse geocoding
+            const geocodeRes = await fetch(
+              `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${API_KEY}`
+            );
+
+            if (!geocodeRes.ok) {
+              throw new Error("Failed to fetch location data");
+            }
+
+            const locationData = await geocodeRes.json();
+
+            if (locationData && locationData.length > 0) {
+              setLocation({
+                city: locationData[0].name,
+                country: locationData[0].country,
+                lat: latitude,
+                lon: longitude,
+              });
+
+              toast.success("Weather for your current location loaded!");
+            } else {
+              throw new Error("Location not found");
+            }
+
+            setLocationLoading(false);
+          } catch (err) {
+            console.error("Error getting location name:", err);
+            setLocation({
+              city: "Unknown Location",
+              country: "",
+              lat: latitude,
+              lon: longitude,
+            });
+            setLocationLoading(false);
+          }
+        },
+        (err) => {
+          console.error("Error getting location:", err);
+          setLocationError(
+            "Unable to retrieve your location. Please allow location access."
+          );
+          setLocationLoading(false);
+
+          // Fallback to default location
+          setLocation({
+            city: "Manolo Fortich",
+            country: "PH",
+            lat: 8.3675,
+            lon: 124.8644,
+          });
+
+          toast.error("Location access denied. Using default location.");
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        }
+      );
+    };
+
+    getUserLocation();
+  }, [API_KEY]);
+
+  // Fetch weather data once we have location
   useEffect(() => {
     const fetchWeatherData = async () => {
+      if (!location) return;
+
+      setLoading(true);
+      setError(null);
+
       try {
         // Current weather data
         const currentRes = await fetch(
@@ -68,7 +160,7 @@ const WeatherApp = () => {
     };
 
     fetchWeatherData();
-  }, [API_KEY, location.lat, location.lon]);
+  }, [API_KEY, location]);
 
   // Process the 3-hour forecast data to get daily forecasts and hourly data for today
   const processForecastData = (forecastList) => {
@@ -173,6 +265,49 @@ const WeatherApp = () => {
     };
   };
 
+  // Function to search for a new location
+  const searchLocation = async (cityName) => {
+    if (!cityName) return;
+
+    setLocationLoading(true);
+    setLocationError(null);
+
+    try {
+      // Geocoding API to get coordinates from city name
+      const geocodeRes = await fetch(
+        `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(
+          cityName
+        )}&limit=1&appid=${API_KEY}`
+      );
+
+      if (!geocodeRes.ok) {
+        throw new Error("Failed to fetch location data");
+      }
+
+      const locationData = await geocodeRes.json();
+
+      if (locationData && locationData.length > 0) {
+        setLocation({
+          city: locationData[0].name,
+          country: locationData[0].country,
+          lat: locationData[0].lat,
+          lon: locationData[0].lon,
+        });
+
+        toast.success(`Weather for ${locationData[0].name} loaded!`);
+      } else {
+        throw new Error("Location not found");
+      }
+
+      setLocationLoading(false);
+    } catch (err) {
+      console.error("Error searching location:", err);
+      setLocationError("Location not found. Please try again.");
+      setLocationLoading(false);
+      toast.error("Location not found. Please try again.");
+    }
+  };
+
   // Convert temperature between C and F
   const convertTemp = (temp) => {
     if (unit === "F") {
@@ -225,12 +360,35 @@ const WeatherApp = () => {
     return "Good evening";
   };
 
+  if (locationLoading) {
+    return (
+      <div className="weather-app-fullscreen">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Detecting your location...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (locationError && !location) {
+    return (
+      <div className="weather-app-fullscreen">
+        <div className="error-container">
+          <h2>Location Error</h2>
+          <p>{locationError}</p>
+          <button onClick={() => window.location.reload()}>Try Again</button>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="weather-app-fullscreen">
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Loading weather data for Manolo Fortich...</p>
+          <p>Loading weather data for {location?.city || "your location"}...</p>
         </div>
       </div>
     );
@@ -261,16 +419,45 @@ const WeatherApp = () => {
 
   return (
     <div className="weather-app-fullscreen">
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="weather-container">
         {/* Header Section */}
         <header className="app-header">
           <div className="location-info">
-            <h1>
-              {location.city}, {location.country}
-            </h1>
+            <div className="location-header">
+              <MapPin size={18} />
+              <h1>
+                {location.city}
+                {location.country ? `, ${location.country}` : ""}
+              </h1>
+            </div>
             <p className="date-time">{getCurrentDateTime()}</p>
             <p className="weather-description">{weatherDescription}</p>
           </div>
+
+          {/* Location Search */}
+          <div className="location-search">
+            <input
+              type="text"
+              placeholder="Search city..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  searchLocation(e.target.value);
+                  e.target.value = "";
+                }
+              }}
+            />
+            <button
+              onClick={() => {
+                const input = document.querySelector(".location-search input");
+                searchLocation(input.value);
+                input.value = "";
+              }}
+            >
+              Search
+            </button>
+          </div>
+
           <div className="units-toggle">
             <button
               className={unit === "C" ? "active" : ""}

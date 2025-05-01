@@ -1,7 +1,14 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import HeaderImage from "../../../../assets/Header Image.png";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+
+  const handleViewCyclonesClick = () => {
+    navigate("/tracking"); 
+  };
+
   return (
     <div
       className="hero-container"
@@ -10,7 +17,7 @@ const HeroSection = () => {
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
-        height: "48vh", 
+        height: "48vh",
       }}
     >
       <div className="hero-content">
@@ -21,7 +28,10 @@ const HeroSection = () => {
         </p>
 
         <div className="hero-button-container">
-          <button className="view-cyclones-button">
+          <button
+            className="view-cyclones-button"
+            onClick={handleViewCyclonesClick}
+          >
             <svg
               className="eye-icon"
               viewBox="0 0 20 20"
@@ -34,7 +44,7 @@ const HeroSection = () => {
                 clipRule="evenodd"
               />
             </svg>
-            <span>View Active Cyclones</span>
+            <span>View Past Cyclones</span>
           </button>
         </div>
       </div>

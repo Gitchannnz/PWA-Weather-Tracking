@@ -36,9 +36,9 @@ export default defineConfig({
       inject: {
         data: {
           title: "Cyclone Tracker",
-          description: "This is the official website of Bakester Mumshie.",
-          keywords: "Bakester Mumshie, official website, SEO",
-          author: "Bakester Mumshie",
+          description: "This is the official website of Cyclone Tracker.",
+          keywords: "Cyclone Tracker",
+          author: "Cyclone Tracker",
         },
       },
     }),
