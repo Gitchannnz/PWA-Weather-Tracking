@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Phone, Info, Shield, FileText, AlertCircle, Book } from "lucide-react";
-import { FIRESTORE_DB } from "../../../firebase/firebaseutil_main";
+import { FIRESTORE_DB } from "../../../../firebase/firebaseutil_main";
 import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 
 const TyphoonPreparedness = () => {
@@ -13,10 +13,11 @@ const TyphoonPreparedness = () => {
     prepareEvacuation: [],
     finalPreparations: [],
   });
+  const [emergencyProcedures, setEmergencyProcedures] = useState([]);
+  const [emergencyContacts, setEmergencyContacts] = useState([]); // NEW STATE
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  // Fetch typhoon data from Firestore on component mount
   useEffect(() => {
     const fetchTyphoonData = async () => {
       try {
@@ -67,8 +68,29 @@ const TyphoonPreparedness = () => {
           });
           prepData[section.name] = sectionData;
         }
-
         setPreparednessSections(prepData);
+
+        // Fetch emergency procedures
+        const proceduresQuery = query(
+          collection(FIRESTORE_DB, "emergencyProcedures")
+        );
+        const proceduresSnapshot = await getDocs(proceduresQuery);
+        const proceduresData = [];
+        proceduresSnapshot.forEach((doc) => {
+          proceduresData.push({ id: doc.id, ...doc.data() });
+        });
+        setEmergencyProcedures(proceduresData);
+
+        // Fetch emergency contacts
+        const contactsQuery = query(
+          collection(FIRESTORE_DB, "emergencyContacts")
+        );
+        const contactsSnapshot = await getDocs(contactsQuery);
+        const contactsData = [];
+        contactsSnapshot.forEach((doc) => {
+          contactsData.push({ id: doc.id, ...doc.data() });
+        });
+        setEmergencyContacts(contactsData);
 
         // Set last updated timestamp
         if (alertsData.length > 0) {
@@ -83,12 +105,12 @@ const TyphoonPreparedness = () => {
     };
 
     fetchTyphoonData();
+    // eslint-disable-next-line
   }, []);
 
   // Helper function to render preparedness items from Firebase
   const renderPreparednessItems = (items) => {
     if (!items || items.length === 0) return null;
-
     return (
       <ul>
         {items.map((item) => (
@@ -96,6 +118,21 @@ const TyphoonPreparedness = () => {
         ))}
       </ul>
     );
+  };
+
+  // Helper function to render array or string fields
+  const renderListOrString = (field) => {
+    if (!field) return null;
+    if (Array.isArray(field)) {
+      return (
+        <ul>
+          {field.map((item, idx) => (
+            <li key={idx}>{item}</li>
+          ))}
+        </ul>
+      );
+    }
+    return <p>{field}</p>;
   };
 
   return (
@@ -215,144 +252,100 @@ const TyphoonPreparedness = () => {
             </section>
           )}
 
+          {/* EMERGENCY PROCEDURES SECTION */}
+          {emergencyProcedures.length > 0 && (
+            <section className="typhoon-section orange-section">
+              <h2>Emergency Procedures</h2>
+              <div className="emergency-procedures-list">
+                {emergencyProcedures.map((proc) => (
+                  <div key={proc.id} className="procedure-card">
+                    <h3>
+                      {proc.disasterType} (Signal {proc.typhoonSignal})
+                    </h3>
+                    <p>
+                      <strong>Location:</strong> {proc.userLocation}
+                    </p>
+                    <p>
+                      <strong>Procedures:</strong>
+                    </p>
+                    {renderListOrString(proc.procedures)}
+                    <p>
+                      <strong>Checklist:</strong>
+                    </p>
+                    {renderListOrString(proc.checklist)}
+                    <p className="procedure-updated">
+                      Last Updated:{" "}
+                      {proc.lastUpdated && proc.lastUpdated.toDate
+                        ? proc.lastUpdated.toDate().toLocaleString()
+                        : String(proc.lastUpdated)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* EMERGENCY CONTACTS SECTION */}
           <section className="typhoon-section red-section">
             <h2>Emergency Contacts</h2>
             <p className="contact-note">
               Keep these important contact numbers handy during emergencies.
             </p>
+            <div className="emergency-contacts">
+              {emergencyContacts.length > 0 ? (
+                emergencyContacts.map((contact) => (
+                  <div key={contact.id} className="contact-card">
+                    <div className="contact-header">
+                      <div
+                        className={`contact-icon-wrapper ${
+                          contact.iconColor || "blue-bg"
+                        }`}
+                      >
+                        {/* Use icon based on iconColor or contact.type if desired */}
+                        <Info size={24} className="contact-icon" />
+                      </div>
+                      <h3>{contact.name}</h3>
+                      <p>{contact.description}</p>
+                    </div>
+                    <div className="contact-number">
+                      <Phone size={18} />
+                      <span>{contact.phone}</span>
+                    </div>
+                    <div className="social-links">
+                      {contact.website && (
+                        <a
+                          href={contact.website}
+                          className="social-link"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Official Website
+                        </a>
+                      )}
+                      {contact.facebook && (
+                        <a
+                          href={contact.facebook}
+                          className="social-link"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Facebook Page
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>No emergency contacts available at the moment.</p>
+              )}
+            </div>
           </section>
-
-          <div className="emergency-contacts">
-            <div className="contact-card">
-              <div className="contact-header">
-                <div className="contact-icon-wrapper blue-bg">
-                  <Info size={24} className="contact-icon" />
-                </div>
-                <h3>DOST-PAGASA</h3>
-                <p>National weather and tropical cyclone warnings</p>
-              </div>
-              <div className="contact-number">
-                <Phone size={18} />
-                <span>282840800</span>
-              </div>
-              <div className="social-links">
-                <a
-                  href="https://www.pagasa.dost.gov.ph/"
-                  className="social-link"
-                >
-                  Official Website
-                </a>
-                <a
-                  href="https://www.facebook.com/PAGASA.DOST.GOV.PH"
-                  className="social-link"
-                >
-                  Facebook Page
-                </a>
-              </div>
-            </div>
-
-            <div className="contact-card">
-              <div className="contact-header">
-                <div className="contact-icon-wrapper red-bg">
-                  <AlertCircle size={24} className="contact-icon" />
-                </div>
-                <h3>NDRRMC</h3>
-                <p>National Disaster Risk Reduction and Management</p>
-              </div>
-              <div className="contact-number">
-                <Phone size={18} />
-                <span></span>
-              </div>
-              <div className="social-links">
-                <a href="http://ndrrmc.gov.ph/" className="social-link">
-                  Official Website
-                </a>
-                <a
-                  href="https://www.facebook.com/NDRRMC"
-                  className="social-link"
-                >
-                  Facebook Page
-                </a>
-              </div>
-            </div>
-
-            <div className="contact-card">
-              <div className="contact-header">
-                <div className="contact-icon-wrapper green-bg">
-                  <Phone size={24} className="contact-icon" />
-                </div>
-                <h3>PNP</h3>
-                <p>Philippine National Police</p>
-              </div>
-              <div className="contact-number">
-                <Phone size={18} />
-                <span>0916 313 7327</span>
-              </div>
-              <div className="social-links">
-                <a
-                  href="https://www.facebook.com/mfmpspcad"
-                  className="social-link"
-                >
-                  Facebook Page
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div className="emergency-contacts">
-            <div className="contact-card">
-              <div className="contact-header">
-                <div className="contact-icon-wrapper blue-bg">
-                  <Info size={24} className="contact-icon" />
-                </div>
-                <h3>BFP</h3>
-                <p>Bureau of Fire Protection</p>
-              </div>
-              <div className="contact-number">
-                <Phone size={18} />
-                <span>0935 230 7289</span>
-              </div>
-              <div className="social-links">
-                <a
-                  href="https://www.facebook.com/manolofire"
-                  className="social-link"
-                >
-                  Facebook Page
-                </a>
-              </div>
-            </div>
-
-            <div className="contact-card">
-              <div className="contact-header">
-                <div className="contact-icon-wrapper red-bg">
-                  <AlertCircle size={24} className="contact-icon" />
-                </div>
-                <h3>Red Cross Philippines</h3>
-                <p>Emergency assistance and relief operations</p>
-              </div>
-              <div className="contact-number">
-                <Phone size={18} />
-                <span>287902300</span>
-              </div>
-              <div className="social-links">
-                <a href="https://redcross.org.ph/" className="social-link">
-                  Official Website
-                </a>
-                <a
-                  href="https://www.facebook.com/phredcross"
-                  className="social-link"
-                >
-                  Facebook Page
-                </a>
-              </div>
-            </div>
-          </div>
         </>
       )}
 
       <footer className="typhoon-footer">
         <p className="important-note">
-          <strong>Important:</strong> In case of imminent danger to
+          <strong>Important:</strong> In case of imminent danger to life or
           life-threatening emergencies, always call 911. Keep these numbers
           saved in your phone and written down in an easily accessible place.
         </p>

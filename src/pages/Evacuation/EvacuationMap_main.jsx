@@ -10,7 +10,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import NavBar from "../../navigations/NavBar/Navigation_main";
 import Footer from "../../navigations/Footer/Footer_main";
-import TyphoonPreparedness from "../AboutCyclone/Preparedness/TyphoonPreparedness";
+import TyphoonPreparedness from "../AboutCyclone/Preparedness/EmergencyContact/TyphoonPreparedness";
 
 import {
   collection,
