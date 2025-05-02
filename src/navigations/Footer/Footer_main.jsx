@@ -26,7 +26,7 @@ const Footer = () => {
 
           <div className="footer-section">
             <h3 className="footer-heading">Contact Information</h3>
-            <ul className="footer-contact">
+            {/* <ul className="footer-contact">
               <li>
                 <svg
                   className="footer-icon"
@@ -80,7 +80,7 @@ const Footer = () => {
                 </svg>
                 <span>(02) 8927-1335</span>
               </li>
-            </ul>
+            </ul> */}
           </div>
 
           <div className="footer-section">

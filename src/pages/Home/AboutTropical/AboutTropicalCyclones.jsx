@@ -1,24 +1,17 @@
 import React, { useEffect, useState } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  CircleMarker,
-} from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import axios from "axios";
 import "leaflet/dist/leaflet.css";
-import { icon } from "leaflet";
+import { icon, divIcon } from "leaflet";
 
 const AboutTropicalCyclones = () => {
-  const [weather, setWeather] = useState(null);
-  const [error, setError] = useState(null);
-  const [activeCyclones, setActiveCyclones] = useState([]);
   const [userMarkers, setUserMarkers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const philippinesCenter = [12.8797, 121.774];
+  const apiKey = "b47fba205d86b1e6f7dddfd426314b54"; // Your API key
 
+  // Default marker icon
   const customIcon = icon({
     iconUrl:
       "https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/images/marker-icon.png",
@@ -27,56 +20,18 @@ const AboutTropicalCyclones = () => {
     popupAnchor: [1, -34],
   });
 
-  const fetchActiveCyclones = async () => {
-    setLoading(true);
-    try {
-      const sampleCyclones = [
-        {
-          id: 1,
-          name: "Typhoon Ambo",
-          position: [10.5, 126.3],
-          category: "Typhoon",
-          windSpeed: 150,
-          pressure: 960,
-          movement: "NW at 15 km/h",
-        },
-        {
-          id: 2,
-          name: "Tropical Storm Butchoy",
-          position: [16.2, 123.1],
-          category: "Tropical Storm",
-          windSpeed: 85,
-          pressure: 990,
-          movement: "N at 12 km/h",
-        },
-        {
-          id: 3,
-          name: "Tropical Depression",
-          position: [8.1, 119.5],
-          category: "Tropical Depression",
-          windSpeed: 55,
-          pressure: 1002,
-          movement: "W at 10 km/h",
-        },
-      ];
+  // Typhoon animated icon as a divIcon with CSS animation
+  const customTyphoonIcon = divIcon({
+    className: "typhoon-icon",
+    html: `<div class="typhoon-marker"></div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -15],
+  });
 
-      setActiveCyclones(sampleCyclones);
-    } catch (err) {
-      console.error("Failed to fetch cyclone data:", err);
-      setError("Failed to load cyclone data.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Fetch weather data for clicked location
   const fetchWeather = async (lat, lon) => {
-    const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
-
-    if (!apiKey) {
-      console.error("❌ VITE_WEATHER_API_KEY is missing from .env");
-      setError("Missing API key.");
-      return;
-    }
+    if (!apiKey) return;
 
     try {
       const response = await axios.get(
@@ -92,53 +47,29 @@ const AboutTropicalCyclones = () => {
       setUserMarkers((prev) => [...prev, newMarker]);
     } catch (err) {
       console.error("❌ Weather fetch failed:", err);
-      setError("Failed to fetch weather.");
     }
   };
-
-  const getCycloneColor = (category) => {
-    switch (category) {
-      case "Super Typhoon":
-        return "#ff0000";
-      case "Typhoon":
-        return "#ff6600";
-      case "Severe Tropical Storm":
-        return "#ffcc00";
-      case "Tropical Storm":
-        return "#00cc00";
-      case "Tropical Depression":
-        return "#0066ff";
-      default:
-        return "#663399";
-    }
-  };
-
-  const getCycloneRadius = (windSpeed) => {
-    return Math.min(Math.max(windSpeed / 10, 10), 50);
-  };
-
-  useEffect(() => {
-    fetchActiveCyclones();
-    const intervalId = setInterval(fetchActiveCyclones, 30 * 60 * 1000);
-    return () => clearInterval(intervalId);
-  }, []);
 
   const handleMapClick = (e) => {
     const { lat, lng } = e.latlng;
     fetchWeather(lat, lng);
   };
 
+  useEffect(() => {
+    // Could add periodic updates here if desired
+    const intervalId = setInterval(() => {
+      setLoading(true);
+      setLoading(false);
+    }, 600000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <div className="about-container">
-      <h1 className="about-title">Philippine Typhoon Monitoring</h1>
+      <h1 className="about-title">Real Time Philippine Typhoon Monitoring</h1>
 
       <div className="map-controls">
-        {/* <button className="control-button" onClick={() => setUserMarkers([])}>
-          Clear User Markers
-        </button>
-        <button className="control-button" onClick={fetchActiveCyclones}>
-          Refresh Cyclone Data
-        </button> */}
         {loading && <span className="loading-indicator">Loading...</span>}
       </div>
 
@@ -150,75 +81,75 @@ const AboutTropicalCyclones = () => {
           style={{ width: "100%", height: "500px" }}
           onClick={handleMapClick}
         >
+          {/* Base Map */}
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution="&copy; OpenStreetMap contributors"
           />
 
-          {activeCyclones.map((cyclone) => (
-            <React.Fragment key={cyclone.id}>
-              <CircleMarker
-                center={cyclone.position}
-                radius={getCycloneRadius(cyclone.windSpeed)}
-                pathOptions={{
-                  color: getCycloneColor(cyclone.category),
-                  fillColor: getCycloneColor(cyclone.category),
-                  fillOpacity: 0.4,
-                }}
+          {/* Live Cloud Overlay */}
+          <TileLayer
+            url={`https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=${apiKey}`}
+            attribution="&copy; OpenWeatherMap"
+          />
+
+          {/* Live Precipitation Overlay */}
+          <TileLayer
+            url={`https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${apiKey}`}
+            attribution="&copy; OpenWeatherMap"
+          />
+
+          {/* Live Wind Animation Overlay */}
+          <TileLayer
+            url={`https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=${apiKey}`}
+            attribution="&copy; OpenWeatherMap"
+          />
+
+          {/* User Click Weather Markers */}
+          {userMarkers.map((marker) => {
+            // Detect if wind speed indicates typhoon (≥32 m/s)
+            const windSpeed = marker.weather.wind.speed;
+            const isTyphoon = windSpeed >= 32;
+
+            return (
+              <Marker
+                key={marker.id}
+                position={marker.position}
+                icon={isTyphoon ? customTyphoonIcon : customIcon}
               >
                 <Popup>
-                  <div className="cyclone-popup">
-                    <h3>{cyclone.name}</h3>
-                    <p>
-                      <strong>Category:</strong> {cyclone.category}
-                    </p>
-                    <p>
-                      <strong>Wind Speed:</strong> {cyclone.windSpeed} km/h
-                    </p>
-                    <p>
-                      <strong>Pressure:</strong> {cyclone.pressure} hPa
-                    </p>
-                    <p>
-                      <strong>Movement:</strong> {cyclone.movement}
-                    </p>
-                  </div>
-                </Popup>
-              </CircleMarker>
-            </React.Fragment>
-          ))}
-
-          {userMarkers.map((marker) => (
-            <Marker
-              key={marker.id}
-              position={marker.position}
-              icon={customIcon}
-            >
-              <Popup>
-                <div className="weather-popup">
-                  <h3>Weather at {marker.weather.name}</h3>
-                  <div className="weather-details">
-                    <img
-                      src={`https://openweathermap.org/img/wn/${marker.weather.weather[0].icon}@2x.png`}
-                      alt="Weather icon"
-                    />
-                    <div className="weather-data">
-                      <p className="temp">
-                        {Math.round(marker.weather.main.temp)}°C
-                      </p>
-                      <p className="desc">
-                        {marker.weather.weather[0].description}
-                      </p>
-                      <p>Humidity: {marker.weather.main.humidity}%</p>
-                      <p>Wind: {marker.weather.wind.speed} m/s</p>
+                  <div className="weather-popup">
+                    <h3>Weather at {marker.weather.name}</h3>
+                    <div className="weather-details">
+                      <img
+                        src={`https://openweathermap.org/img/wn/${marker.weather.weather[0].icon}@2x.png`}
+                        alt="Weather icon"
+                      />
+                      <div className="weather-data">
+                        <p className="temp">
+                          {Math.round(marker.weather.main.temp)}°C
+                        </p>
+                        <p className="desc">
+                          {marker.weather.weather[0].description}
+                        </p>
+                        <p>Humidity: {marker.weather.main.humidity}%</p>
+                        <p>Wind: {windSpeed} m/s</p>
+                        {isTyphoon && (
+                          <p style={{ color: "red", fontWeight: "bold" }}>
+                            ⚠️ Typhoon Detected!
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+                </Popup>
+              </Marker>
+            );
+          })}
         </MapContainer>
       </div>
 
+      {/* The rest of your content remains unchanged */}
       <div className="two-column-section">
         <div className="column">
           <div className="info-box">
@@ -241,7 +172,7 @@ const AboutTropicalCyclones = () => {
                 <b>LPA (Low Pressure Area):</b> Potential origin of a cyclone.
               </li>
               <li>
-                <b>ITCZ:</b> Intertropical Convergence Zone — frequent rainfall
+                <b>ITCZ:</b> Intertropical Convergence Zone - frequent rainfall
                 area.
               </li>
               <li>
