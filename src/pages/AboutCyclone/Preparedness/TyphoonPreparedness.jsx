@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Phone, Info, Shield, FileText, AlertCircle, Book } from "lucide-react";
-import { FIRESTORE_DB } from "../../../../firebase/firebaseutil_main";
+import { FIRESTORE_DB } from "../../../firebase/firebaseutil_main";
 import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 
 const TyphoonPreparedness = () => {

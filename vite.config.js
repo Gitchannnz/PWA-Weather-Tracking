@@ -1,6 +1,6 @@
 import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vite";
-import { createHtmlPlugin } from "vite-plugin-html";
+
 
 import react from "@vitejs/plugin-react";
 // https://vitejs.dev/config/
@@ -19,7 +19,7 @@ export default defineConfig({
           {
             src: "/favicon.ico",
             sizes: "192x192",
-            type: "image/png",
+            type: "image/ico",
           },
           {
             src: "/logo.png",
@@ -32,22 +32,14 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest}"],
       },
     }),
-    createHtmlPlugin({
-      inject: {
-        data: {
-          title: "Cyclone Tracker",
-          description: "This is the official website of Cyclone Tracker.",
-          keywords: "Cyclone Tracker",
-          author: "Cyclone Tracker",
-        },
-      },
-    }),
+   
 
     { enforce: "pre" },
     react({ include: /\.(js|jsx|ts|tsx)$/ }),
   
   ],
   build: {
-    outDir: "dist", // Ensure the static files are generated in 'dist' folder
+    chunkSizeWarningLimit: 1000
+     // Ensure the static files are generated in 'dist' folder
   },
 });

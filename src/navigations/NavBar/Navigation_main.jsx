@@ -240,8 +240,8 @@ function ResponsiveAppBar() {
               className="pointer"
               style={{
                 width: "10vw",
-                maxWidth: "90px",
-                minWidth: "90px",
+                maxWidth: "70px",
+                minWidth: "70px",
                 marginTop: "10px",
                 marginRight: "1rem",
               }}

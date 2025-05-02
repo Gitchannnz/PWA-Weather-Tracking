@@ -551,7 +551,7 @@ const sendWeatherNotification = () => {
             >
               F
             </button>
-            <button
+            {/* <button
               onClick={sendWeatherNotification}
               className="notification-btn"
               style={{
@@ -572,7 +572,7 @@ const sendWeatherNotification = () => {
               }
             >
               Try Weather Alert
-            </button>
+            </button> */}
           </div>
         </header>
 

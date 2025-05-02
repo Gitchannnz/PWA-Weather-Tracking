@@ -6,13 +6,10 @@ import CallToAction from "./Components/CallToAction/CallToAction";
 import AboutTropicalCyclones from "./AboutTropical/AboutTropicalCyclones";
 import Weather_main from "./Weather/Weather_main";
 
-
-
 const Footer_main = lazy(() => import("../../navigations/Footer/Footer_main"));
 const Navigation_main = lazy(() =>
   import("../../navigations/NavBar/Navigation_main")
 );
-
 
 export default function Home_main() {
   const url = window.location.href;
@@ -81,9 +78,12 @@ export default function Home_main() {
         <Suspense fallback={<></>}>
           <Navigation_main />
           <HeroSection_main />
-          <Weather_main />
-          <AboutTropicalCyclones />
-          <CallToAction />
+          <div className="container">
+          
+            <Weather_main />
+            <AboutTropicalCyclones />
+            <CallToAction />
+          </div>
           <Footer_main />
         </Suspense>
       </div>

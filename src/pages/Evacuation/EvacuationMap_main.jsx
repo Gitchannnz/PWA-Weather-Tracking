@@ -8,187 +8,12 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { collection, onSnapshot } from "firebase/firestore";
+import { FIREBASE_DB } from "../../firebase/firebaseutil_main";
 import NavBar from "../../navigations/NavBar/Navigation_main";
 import Footer from "../../navigations/Footer/Footer_main";
-import TyphoonPreparedness from "../AboutCyclone/Preparedness/EmergencyContact/TyphoonPreparedness";
-
-import {
-  collection,
-  doc,
-  setDoc,
-  getDocs,
-  onSnapshot,
-} from "firebase/firestore";
-import { FIREBASE_DB } from "../../firebase/firebaseutil_main";
-
-// Evacuation centers data
-const defaultCenters = [
-  {
-    id: 1,
-    name: "Manolo Fortich Central School",
-    location: "Poblacion",
-    coordinates: [8.3678, 124.8649],
-    capacity: 350,
-    facilities: ["Water Supply", "Toilet", "Kitchen", "Medical Aid"],
-  },
-  {
-    id: 2,
-    name: "Dalirig National High School",
-    location: "Dalirig",
-    coordinates: [8.4062, 124.7964],
-    capacity: 280,
-    facilities: ["Water Supply", "Toilet", "Sleeping Area"],
-  },
-  {
-    id: 3,
-    name: "Tankulan Covered Court",
-    location: "Tankulan",
-    coordinates: [8.3643, 124.8577],
-    capacity: 200,
-    facilities: ["Water Supply", "Toilet"],
-  },
-  {
-    id: 4,
-    name: "Sto. Niño Elementary School",
-    location: "Sto. Niño",
-    coordinates: [8.3728, 124.8749],
-    capacity: 180,
-    facilities: ["Water Supply", "Toilet", "Medical Aid"],
-  },
-  {
-    id: 5,
-    name: "Agusan Canyon Integrated School",
-    location: "Agusan Canyon",
-    coordinates: [8.3978, 124.8549],
-    capacity: 220,
-    facilities: ["Water Supply", "Toilet", "Kitchen"],
-  },
-  {
-    id: 6,
-    name: "Alae Elementary School",
-    location: "Alae",
-    coordinates: [8.4078, 124.8849],
-    capacity: 240,
-    facilities: ["Water Supply", "Toilet", "Kitchen", "Medical Aid"],
-  },
-  {
-    id: 7,
-    name: "Dahilayan Community Center",
-    location: "Dahilayan",
-    coordinates: [8.3578, 124.9049],
-    capacity: 190,
-    facilities: ["Water Supply", "Toilet", "Sleeping Area"],
-  },
-  {
-    id: 8,
-    name: "Sankanan Elementary School",
-    location: "Sankanan",
-    coordinates: [8.3558, 124.8249],
-    capacity: 165,
-    facilities: ["Water Supply", "Toilet"],
-  },
-  {
-    id: 9,
-    name: "Guilang-guilang Covered Court",
-    location: "Guilang-guilang",
-    coordinates: [8.3778, 124.8949],
-    capacity: 210,
-    facilities: ["Water Supply", "Toilet", "Medical Aid"],
-  },
-  {
-    id: 10,
-    name: "San Miguel Barangay Hall",
-    location: "San Miguel",
-    coordinates: [8.3878, 124.8349],
-    capacity: 150,
-    facilities: ["Water Supply", "Toilet"],
-  },
-  {
-    id: 11,
-    name: "Mambatangan Elementary School",
-    location: "Mambatangan",
-    coordinates: [8.4078, 124.8249],
-    capacity: 175,
-    facilities: ["Water Supply", "Toilet", "Kitchen"],
-  },
-  {
-    id: 12,
-    name: "Lingion Community Hall",
-    location: "Lingion",
-    coordinates: [8.4178, 124.8449],
-    capacity: 130,
-    facilities: ["Water Supply", "Toilet"],
-  },
-  {
-    id: 13,
-    name: "Maluko Elementary School",
-    location: "Maluko",
-    coordinates: [8.3778, 124.8149],
-    capacity: 190,
-    facilities: ["Water Supply", "Toilet", "Medical Aid"],
-  },
-  {
-    id: 14,
-    name: "Santiago Covered Court",
-    location: "Santiago",
-    coordinates: [8.3578, 124.8749],
-    facilities: ["Water Supply", "Toilet"],
-  },
-  {
-    id: 15,
-    name: "Dicklum Elementary School",
-    location: "Dicklum",
-    coordinates: [8.4278, 124.8749],
-    capacity: 160,
-    facilities: ["Water Supply", "Toilet", "Kitchen"],
-  },
-  {
-    id: 16,
-    name: "Damilag Sports Complex",
-    location: "Damilag",
-    coordinates: [8.4078, 124.9049],
-    capacity: 300,
-    facilities: [
-      "Water Supply",
-      "Toilet",
-      "Kitchen",
-      "Medical Aid",
-      "Sleeping Area",
-    ],
-  },
-  {
-    id: 17,
-    name: "San Roque Parish Multipurpose Hall",
-    location: "San Roque",
-    coordinates: [8.3678, 124.8849],
-    capacity: 220,
-    facilities: ["Water Supply", "Toilet", "Medical Aid"],
-  },
-  {
-    id: 18,
-    name: "Mantibugao Community Center",
-    location: "Mantibugao",
-    coordinates: [8.3478, 124.8149],
-    capacity: 170,
-    facilities: ["Water Supply", "Toilet"],
-  },
-  {
-    id: 19,
-    name: "Tikala Elementary School",
-    location: "Tikala",
-    coordinates: [8.3878, 124.9149],
-    capacity: 200,
-    facilities: ["Water Supply", "Toilet", "Kitchen"],
-  },
-  {
-    id: 20,
-    name: "Kalugmanan Multi-Purpose Building",
-    location: "Kalugmanan",
-    coordinates: [8.4178, 124.8049],
-    capacity: 250,
-    facilities: ["Water Supply", "Toilet", "Kitchen", "Medical Aid"],
-  },
-];
+import TyphoonPreparedness from "../AboutCyclone/Preparedness/TyphoonPreparedness";
+import { Badge, Spinner } from "react-bootstrap";
 
 const createCustomIcon = (number, isActive = false) => {
   return L.divIcon({
@@ -204,65 +29,56 @@ const createCustomIcon = (number, isActive = false) => {
 };
 
 const EvacuationMap = () => {
-  const mapCenter = [8.3678, 124.8649];
+  const mapCenter = [8.3678, 124.8649]; // Default center for Manolo Fortich
   const zoomLevel = 12;
 
   const [mapInstance, setMapInstance] = useState(null);
   const [activeCenter, setActiveCenter] = useState(null);
-  const [evacuationCenters, setEvacuationCenters] = useState(defaultCenters); // Initialize with default centers
+  const [evacuationCenters, setEvacuationCenters] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Real-time Firestore listener with initial seeding
   useEffect(() => {
     const centersRef = collection(FIREBASE_DB, "EvacuationCenters");
 
-    // Check if Firestore collection exists and seed if empty
-    const checkAndSeed = async () => {
-      try {
-        const snapshot = await getDocs(centersRef);
-
-        // If empty, seed with default data
-        if (snapshot.empty) {
-          console.log("Seeding evacuation centers database...");
-          const seedPromises = defaultCenters.map((center) =>
-            setDoc(doc(centersRef, center.id.toString()), center)
-          );
-          await Promise.all(seedPromises);
-          console.log("Database seeded successfully");
-        } else {
-          console.log("Evacuation centers already exist in database");
-        }
-
-        setLoading(false);
-      } catch (error) {
-        console.error("Error checking/seeding database:", error);
-        setLoading(false);
-      }
-    };
-
-    checkAndSeed();
-
-    // Set up real-time listener
     const unsubscribe = onSnapshot(
       centersRef,
       (snapshot) => {
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        if (data.length > 0) {
-          setEvacuationCenters(data);
+        try {
+          const centersData = snapshot.docs.map((doc, index) => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              number: index + 1,
+              name: data.name,
+              location: data.address,
+              coordinates: data.geoLocation 
+                ? [data.geoLocation.lat, data.geoLocation.lng] 
+                : [0, 0],
+              capacity: data.capacity || 0,
+              currentOccupancy: data.currentOccupancy || 0,
+              facilities: data.facilities || [],
+              capacityStatus: data.capacityStatus || "unknown",
+              contactNumber: data.contactNumber || "",
+              description: data.description || ""
+            };
+          });
+          setEvacuationCenters(centersData);
+          setLoading(false);
+        } catch (err) {
+          setError("Failed to process evacuation center data");
+          setLoading(false);
+          console.error("Data processing error:", err);
         }
-        setLoading(false);
       },
       (error) => {
-        console.error("Error listening to evacuation centers:", error);
+        setError("Failed to load evacuation centers. Please try again later.");
         setLoading(false);
+        console.error("Firestore error:", error);
       }
     );
 
-    return () => unsubscribe(); // Cleanup listener
+    return () => unsubscribe();
   }, []);
 
   const handleMarkerClick = (center) => {
@@ -271,6 +87,15 @@ const EvacuationMap = () => {
       mapInstance.flyTo(center.coordinates, 14, {
         duration: 1.5,
       });
+    }
+  };
+
+  const getCapacityStatusVariant = (status) => {
+    switch (status.toLowerCase()) {
+      case 'full': return 'danger';
+      case 'limited': return 'warning';
+      case 'available': return 'success';
+      default: return 'secondary';
     }
   };
 
@@ -284,7 +109,12 @@ const EvacuationMap = () => {
             Manolo Fortich Evacuation Centers
           </h1>
           <p>Click on markers to view evacuation center details</p>
-          {loading && <p>Loading evacuation centers...</p>}
+          {loading && <Spinner animation="border" size="sm" className="me-2" />}
+          {error && (
+            <Alert variant="danger" className="mt-2">
+              {error}
+            </Alert>
+          )}
         </div>
 
         <MapContainer
@@ -300,11 +130,11 @@ const EvacuationMap = () => {
           />
           <ZoomControl position="bottomright" />
 
-          {evacuationCenters.map((center, index) => (
+          {evacuationCenters.map((center) => (
             <Marker
               key={center.id}
               position={center.coordinates}
-              icon={createCustomIcon(index + 1, center.id === activeCenter?.id)}
+              icon={createCustomIcon(center.number, center.id === activeCenter?.id)}
               eventHandlers={{
                 click: () => handleMarkerClick(center),
               }}
@@ -314,22 +144,57 @@ const EvacuationMap = () => {
                   <h3>{center.name}</h3>
                   <div className="info-row">
                     <span className="icon">📍</span>
-                    <span>{center.location}, Manolo Fortich</span>
+                    <span>{center.location || "Location not specified"}</span>
                   </div>
-                  {center.capacity && (
+                  <div className="info-row">
+                    <span className="icon">👥</span>
+                    <span>
+                      Occupancy: {center.currentOccupancy}/{center.capacity}
+                      <Badge 
+                        bg={getCapacityStatusVariant(center.capacityStatus)} 
+                        className="ms-2"
+                      >
+                        {center.capacityStatus.toUpperCase()}
+                      </Badge>
+                    </span>
+                  </div>
+                  {center.contactNumber && (
                     <div className="info-row">
-                      <span className="icon">👥</span>
-                      <span>Capacity: {center.capacity} people</span>
+                      <span className="icon">📞</span>
+                      <a href={`tel:${center.contactNumber}`}>{center.contactNumber}</a>
                     </div>
                   )}
                   <div className="info-row">
                     <span className="icon">ℹ️</span>
                     <div className="facilities-list">
                       <span className="label">Facilities:</span>
-                      <p>{center.facilities?.join(", ")}</p>
+                      {center.facilities.length > 0 ? (
+                        <ul>
+                          {center.facilities.map((facility, i) => (
+                            <li key={i}>{facility}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p>No facilities listed</p>
+                      )}
                     </div>
                   </div>
-                  <button className="directions-button">Get Directions</button>
+                  {center.description && (
+                    <div className="info-row">
+                      <span className="icon">📝</span>
+                      <p>{center.description}</p>
+                    </div>
+                  )}
+                  <button 
+                    className="directions-button"
+                    onClick={() => {
+                      window.open(
+                        `https://www.google.com/maps/dir/?api=1&destination=${center.coordinates[0]},${center.coordinates[1]}`
+                      );
+                    }}
+                  >
+                    Get Directions
+                  </button>
                 </div>
               </Popup>
             </Marker>
@@ -339,6 +204,120 @@ const EvacuationMap = () => {
         <TyphoonPreparedness />
       </div>
       <Footer />
+
+      <style jsx>{`
+        .evacuation-map-container {
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh;
+        }
+        
+        .map-header {
+          text-align: center;
+          padding: 20px;
+          background-color: #f8f9fa;
+        }
+        
+        .map-header h1 {
+          margin-bottom: 10px;
+        }
+        
+        .leaflet-container {
+          height: 60vh;
+          width: 100%;
+          z-index: 1;
+        }
+        
+        .evacuation-popup {
+          min-width: 250px;
+        }
+        
+        .popup-content {
+          padding: 10px;
+        }
+        
+        .popup-content h3 {
+          margin-top: 0;
+          color: #0d6efd;
+        }
+        
+        .info-row {
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 8px;
+        }
+        
+        .icon {
+          margin-right: 8px;
+          font-size: 16px;
+        }
+        
+        .facilities-list {
+          flex: 1;
+        }
+        
+        .facilities-list ul {
+          padding-left: 20px;
+          margin: 5px 0;
+        }
+        
+        .directions-button {
+          width: 100%;
+          padding: 8px;
+          margin-top: 10px;
+          background-color: #0d6efd;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        
+        .directions-button:hover {
+          background-color: #0b5ed7;
+        }
+        
+        .custom-marker {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        
+        .marker-container {
+          position: relative;
+          text-align: center;
+        }
+        
+        .marker-circle {
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          background-color: #0d6efd;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          font-size: 14px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .marker-pointer {
+          width: 0;
+          height: 0;
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          border-top: 10px solid #0d6efd;
+          margin-top: -2px;
+        }
+        
+        .custom-marker.active .marker-circle {
+          background-color: #dc3545;
+        }
+        
+        .custom-marker.active .marker-pointer {
+          border-top-color: #dc3545;
+        }
+      `}</style>
     </>
   );
 };
