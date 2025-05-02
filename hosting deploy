@@ -1,1 +1,1 @@
-npx firebase deploy --only hosting:bakestermumshie
+npx firebase deploy --only hosting:andam-typhoon-tracker

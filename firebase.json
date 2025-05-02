@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "cyclonetracker",
+    "site": "andam-typhoon-tracker",
     "public": "dist",
     "ignore": [
       "firebase.json",

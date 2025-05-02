@@ -13,7 +13,7 @@ const HeroSection = () => {
     <section className="hero-container">
       <div className="container">
         <div className="hero-content">
-          <h1 className="hero-title">Tropical Cyclone Tracker</h1>
+          <h1 className="hero-title">Tropical Andam Typhoon Tracker</h1>
           <p className="hero-subtitle">
             Monitor and track tropical cyclones in the Philippines and
             surrounding areas

@@ -9,8 +9,8 @@ export default defineConfig({
     VitePWA({
       manifest: {
         includeAssets: ["favicon.ico", "apple-touch-icon.png", "assets/*"],
-        name: "Cyclone Tracker",
-        short_name: "Cyclone Tracker",
+        name: "Andam Typhoon Tracker",
+        short_name: "Andam Typhoon Tracker",
         start_url: "/",
         display: "standalone",
         background_color: "#ffffff",

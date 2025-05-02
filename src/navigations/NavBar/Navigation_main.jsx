@@ -235,7 +235,7 @@ function ResponsiveAppBar() {
             <Image
               onClick={() => {
                 navigate("/home");
-                document.title = "Weather  Cyclone Tracker";
+                document.title = "Weather  Andam Typhoon Tracker";
               }}
               className="pointer"
               style={{
@@ -276,7 +276,7 @@ function ResponsiveAppBar() {
                     pt: 0,
                   }}
                 >
-                  CYCLONE TRACKER
+                  Andam Typhoon Tracker
                 </Typography>
                 <Typography
                   variant="p"
