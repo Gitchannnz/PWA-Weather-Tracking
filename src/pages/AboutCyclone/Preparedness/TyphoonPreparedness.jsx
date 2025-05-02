@@ -1,4 +1,4 @@
-//TyphoonPreparedness.jsx
+
 import React, { useState, useEffect } from "react";
 import { Phone, Info, Shield, FileText, AlertCircle } from "lucide-react";
 import { FIRESTORE_DB } from "../../../firebase/firebaseutil_main";
@@ -18,7 +18,33 @@ const TyphoonPreparedness = () => {
   const [selectedSignal, setSelectedSignal] = useState("1");
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [emergencyContacts, setEmergencyContacts] = useState([]);
 
+
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Example Firestore query
+        const contactsQuery = query(
+          collection(FIRESTORE_DB, "emergencyContacts"),
+          orderBy("createdAt", "desc")
+        );
+        const contactsSnapshot = await getDocs(contactsQuery);
+        const contactsData = contactsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setEmergencyContacts(contactsData);
+      } catch (error) {
+        console.error("Error fetching emergency contacts:", error);
+      }
+    };
+  
+    fetchData(); // Call the async function
+  }, []);
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -228,9 +254,25 @@ const TyphoonPreparedness = () => {
           </section>
 
           <div className="emergency-contacts">
-            {/* Contact Cards (PAGASA, NDRRMC, PNP, BFP, Red Cross) go here */}
-            {/* ... */}
-          </div>
+  {emergencyContacts.map((contact) => (
+    <div key={contact.id} className="contact-card" style={{color: "#d63333", textDecoration: "underline",}}>
+      <h3>{contact.name}</h3>
+      <p><strong>Type:</strong> {contact.type}</p>
+      <p><strong>Description:</strong> {contact.description}</p>
+      <p><strong>Location:</strong> {contact.location}</p>
+      <p><strong>Phone:</strong> <a href={`tel:${contact.phone}`}>{contact.phone}</a></p>
+      {contact.link && (
+        <p>
+          <strong>Link:</strong>{" "}
+          <a href={contact.link} target="_blank" rel="noopener noreferrer">
+            {contact.link}
+          </a>
+        </p>
+      )}
+    </div>
+  ))}
+</div>
+
         </>
       )}
 
