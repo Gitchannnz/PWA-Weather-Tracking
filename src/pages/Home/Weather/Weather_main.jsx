@@ -28,6 +28,23 @@ const WeatherApp = () => {
 
   const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
 
+  // Register service worker on mount
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/service-worker.js")
+        .then((registration) => {
+          console.log(
+            "Service Worker registered with scope:",
+            registration.scope
+          );
+        })
+        .catch((error) => {
+          console.error("Service Worker registration failed:", error);
+        });
+    }
+  }, []);
+
   // Get user's location
   useEffect(() => {
     const getUserLocation = () => {
@@ -52,7 +69,7 @@ const WeatherApp = () => {
           try {
             const { latitude, longitude } = position.coords;
 
-            // Get location name from coordinates using reverse geocoding
+            // Reverse geocoding to get city name
             const geocodeRes = await fetch(
               `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${API_KEY}`
             );
@@ -360,6 +377,69 @@ const WeatherApp = () => {
     return "Good evening";
   };
 
+  // Push Notification function
+const sendWeatherNotification = () => {
+  if (!weatherData || !location) {
+    toast.error("Weather data not loaded yet.");
+    return;
+  }
+
+  const mainWeather = weatherData.weather[0].main.toLowerCase();
+  const description = weatherData.weather[0].description;
+  const temp = convertTemp(weatherData.main.temp);
+  const city = location.city;
+
+  let title = "Today's Weather";
+  let message = `Weather in ${city}: ${description}, ${temp}°${unit}.`;
+
+  if (
+    mainWeather.includes("typhoon") ||
+    mainWeather.includes("storm") ||
+    mainWeather.includes("thunderstorm")
+  ) {
+    title = "⚠️ Typhoon/Storm Alert!";
+    message = `Severe weather in ${city}: ${description}. Stay safe!`;
+  } else if (mainWeather.includes("rain")) {
+    title = "🌧️ Rain Alert";
+    message = `Rain expected in ${city}: ${description}. Don't forget your umbrella!`;
+  } else if (mainWeather.includes("snow")) {
+    title = "❄️ Snow Alert";
+    message = `Snow in ${city}: ${description}. Dress warmly!`;
+  }
+
+  // Request permission if needed
+  if (window.Notification && Notification.permission !== "granted") {
+    Notification.requestPermission().then((permission) => {
+      if (permission === "granted") {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.showNotification(title, {
+            body: message,
+            icon: `/weather-icons/${weatherData.weather[0].icon}.png`,
+            badge: "/favicon.ico",
+            vibrate: [200, 100, 200],
+          });
+        });
+        toast.success("Weather notification sent!");
+      } else {
+        toast.info("Notification permission denied.");
+      }
+    });
+  } else if (window.Notification && Notification.permission === "granted") {
+    navigator.serviceWorker.ready.then((registration) => {
+      registration.showNotification(title, {
+        body: message,
+        icon: `/weather-icons/${weatherData.weather[0].icon}.png`,
+        badge: "/favicon.ico",
+        vibrate: [200, 100, 200],
+      });
+    });
+    toast.success("Weather notification sent!");
+  } else {
+    toast.info(message);
+  }
+};
+
+
   if (locationLoading) {
     return (
       <div className="weather-app-fullscreen">
@@ -471,6 +551,28 @@ const WeatherApp = () => {
             >
               F
             </button>
+            <button
+              onClick={sendWeatherNotification}
+              className="notification-btn"
+              style={{
+                marginLeft: 10,
+                padding: "8px 12px",
+                backgroundColor: "#4a6fa1",
+                color: "white",
+                border: "none",
+                borderRadius: 4,
+                cursor: "pointer",
+                transition: "background-color 0.3s",
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = "#3a5a8a")
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = "#4a6fa1")
+              }
+            >
+              Try Weather Alert
+            </button>
           </div>
         </header>
 
@@ -507,106 +609,56 @@ const WeatherApp = () => {
                 <div className="detail-item">
                   <CloudRain size={20} />
                   <span className="detail-label">Precipitation</span>
-                  <span className="detail-value">
-                    {precipitation.toFixed(0)}%
-                  </span>
+                  <span className="detail-value">{precipitation}%</span>
                 </div>
                 <div className="detail-item">
                   <Wind size={20} />
-                  <span className="detail-label">Wind</span>
-                  <span className="detail-value">
-                    {windSpeed.toFixed(1)} km/h
-                  </span>
+                  <span className="detail-label">Wind Speed</span>
+                  <span className="detail-value">{windSpeed} m/s</span>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Hourly Forecast Graph */}
-        <section className="hourly-forecast-section">
-          <div className="section-header">
-            <h2>Today's Forecast</h2>
-            <div className="tab-buttons">
-              <button
-                className={activeTab === "Temperature" ? "active" : ""}
-                onClick={() => setActiveTab("Temperature")}
-              >
-                <Thermometer size={16} />
-                Temperature
-              </button>
-              <button
-                className={activeTab === "Precipitation" ? "active" : ""}
-                onClick={() => setActiveTab("Precipitation")}
-              >
-                <CloudRain size={16} />
-                Precipitation
-              </button>
-              <button
-                className={activeTab === "Wind" ? "active" : ""}
-                onClick={() => setActiveTab("Wind")}
-              >
-                <Wind size={16} />
-                Wind
-              </button>
-            </div>
-          </div>
-
-          <div className="hourly-chart">
-            {hourlyData.map((item, index) => (
-              <div key={index} className="hourly-column">
-                <span className="hour-temp">{convertTemp(item.temp)}°</span>
-                <div className="hour-bar-container">
-                  <div
-                    className="hour-bar"
-                    style={{
-                      height: `${Math.max(30, (item.temp / 40) * 100)}%`,
-                      backgroundColor: `hsl(${200 - item.temp * 5}, 80%, 60%)`,
-                    }}
-                  ></div>
+        {/* Forecast Section */}
+        <section className="forecast-section">
+          <h3>7-Day Forecast</h3>
+          <div className="daily-forecast-list">
+            {forecastData.map((day) => (
+              <div key={day.day + day.date} className="daily-forecast-card">
+                <div className="day-header">
+                  <span>{day.day}</span>,{" "}
+                  <span>
+                    {day.month} {day.date}
+                  </span>
                 </div>
-                <div className="hour-icon">
-                  {getWeatherIcon(item.weather, 16)}
+                <div className="weather-icon">
+                  {getWeatherIcon(day.weather.icon)}
                 </div>
-                <span className="hour-label">{item.time}</span>
+                <div className="temps">
+                  <span>H: {convertTemp(day.tempMax)}°</span>
+                  <span>L: {convertTemp(day.tempMin)}°</span>
+                </div>
+                <div className="precipitation">
+                  Precip: {Math.round(day.precipitation)}%
+                </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Weekly Forecast */}
-        <section className="weekly-forecast-section">
-          <h2>7-Day Forecast</h2>
-          <div className="forecast-container">
-            {forecastData.map((day, index) => (
-              <div key={index} className="forecast-day">
-                <div className="day-header">
-                  <span className="day-name">{day.day}</span>
-                  <span className="day-date">
-                    {day.month} {day.date}
-                  </span>
+        {/* Hourly Forecast Section */}
+        <section className="hourly-forecast-section">
+          <h3>Today's Hourly Forecast</h3>
+          <div className="hourly-forecast-list">
+            {hourlyData.map((hour, idx) => (
+              <div key={idx} className="hourly-forecast-card">
+                <span className="hourly-time">{hour.time}</span>
+                <div className="weather-icon">
+                  {getWeatherIcon(hour.weather)}
                 </div>
-                <div className="day-icon">
-                  {getWeatherIcon(day.weather.icon, 24)}
-                </div>
-                <div className="day-temps">
-                  <span className="day-high">{convertTemp(day.tempMax)}°</span>
-                  <span className="day-low">{convertTemp(day.tempMin)}°</span>
-                </div>
-                <div className="day-details">
-                  <div className="day-detail">
-                    <CloudRain size={14} />
-                    <span>{day.precipitation.toFixed(0)}%</span>
-                  </div>
-                  <div className="day-detail">
-                    <Droplets size={14} />
-                    <span>{day.humidity}%</span>
-                  </div>
-                  <div className="day-detail">
-                    <Wind size={14} />
-                    <span>{day.windSpeed.toFixed(1)} km/h</span>
-                  </div>
-                </div>
+                <span className="hourly-temp">{convertTemp(hour.temp)}°</span>
               </div>
             ))}
           </div>
