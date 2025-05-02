@@ -126,30 +126,6 @@
   justify-content: center;
 }
 
-/* Media query for mobile devices */
-@media (max-width: 768px) {
-  .responsive-image {
-    height: 400px;
-    /* Resize the height for smaller screens */
-  }
-
-  .image-holder {
-    height: 430px;
-  }
-
-  .sub-nav-container {
-    display: none;
-  }
-
-  .footerDesign {
-    height: "200vh";
-  }
-}
-
-.footerDesign {
-  height: "100vh";
-}
-
 /* ResponsiveAppBar.css */
 .sub-nav-transition {
 
@@ -2699,4 +2675,217 @@ body {
 .contact-card a {
   color: #d63333;
   text-decoration: underline;
+}
+
+
+/* Typhoon Emergency Information CSS
+ * A clean, responsive design for emergency information display
+ */
+
+/* Base styles and variables */
+:root {
+  --color-primary: #2c3e50;
+  --color-green: #27ae60;
+  --color-green-light: #e8f5e9;
+  --color-red: #e74c3c;
+  --color-red-light: #ffebee;
+  --color-yellow: #f39c12;
+  --color-blue: #3498db;
+  --color-gray: #f5f5f5;
+  --color-gray-dark: #7f8c8d;
+  --color-white: #ffffff;
+  --border-radius: 8px;
+  --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+/* Section styling */
+.typhoon-section {
+  margin: 2rem 0;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.green-section {
+  background-color: var(--color-green-light);
+  border-left: 5px solid var(--color-green);
+}
+
+.red-section {
+  background-color: var(--color-red-light);
+  border-left: 5px solid var(--color-red);
+}
+
+/* Section headings */
+.typhoon-section h2 {
+  color: var(--color-primary);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+  position: relative;
+}
+
+.typhoon-section h2::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background-color: currentColor;
+}
+
+/* Evacuation Centers */
+.evacuation-centers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.evacuation-card {
+  background-color: var(--color-white);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+}
+
+.evacuation-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.evacuation-card h3 {
+  color: var(--color-green);
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 1.3rem;
+}
+
+.center-location {
+  color: var(--color-primary);
+  margin-bottom: 0.75rem;
+  font-style: italic;
+}
+
+.center-capacity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.center-contact {
+  color: var(--color-primary);
+  margin-bottom: 0;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #eaeaea;
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.AVAILABLE {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.LIMITED {
+  background-color: #fff8e1;
+  color: #f57f17;
+}
+
+.FULL {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.UNKNOWN {
+  background-color: #e0e0e0;
+  color: #616161;
+}
+
+/* Emergency Contacts */
+.contact-note {
+  color: var(--color-red);
+  font-style: italic;
+  margin-bottom: 1.5rem;
+}
+
+.emergency-contacts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.contact-card {
+  background-color: var(--color-white);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  border-left: 3px solid var(--color-red);
+  transition: var(--transition);
+}
+
+.contact-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.contact-card h3 {
+  color: var(--color-red);
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.contact-card p {
+  margin: 0.5rem 0;
+  color: var(--color-primary);
+}
+
+.contact-card a {
+  color: var(--color-blue);
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.contact-card a:hover {
+  color: var(--color-red);
+  text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .typhoon-section {
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  
+  .evacuation-centers,
+  .emergency-contacts {
+    grid-template-columns: 1fr;
+  }
+  
+  .typhoon-section h2 {
+    font-size: 1.5rem;
+  }
+  
+  .evacuation-card,
+  .contact-card {
+    padding: 1.25rem;
+  }
 }

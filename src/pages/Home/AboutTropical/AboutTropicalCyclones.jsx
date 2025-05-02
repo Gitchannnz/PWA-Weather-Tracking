@@ -133,12 +133,12 @@ const AboutTropicalCyclones = () => {
       <h1 className="about-title">Philippine Typhoon Monitoring</h1>
 
       <div className="map-controls">
-        <button className="control-button" onClick={() => setUserMarkers([])}>
+        {/* <button className="control-button" onClick={() => setUserMarkers([])}>
           Clear User Markers
         </button>
         <button className="control-button" onClick={fetchActiveCyclones}>
           Refresh Cyclone Data
-        </button>
+        </button> */}
         {loading && <span className="loading-indicator">Loading...</span>}
       </div>
 

@@ -378,67 +378,66 @@ const WeatherApp = () => {
   };
 
   // Push Notification function
-const sendWeatherNotification = () => {
-  if (!weatherData || !location) {
-    toast.error("Weather data not loaded yet.");
-    return;
-  }
+  const sendWeatherNotification = () => {
+    if (!weatherData || !location) {
+      toast.error("Weather data not loaded yet.");
+      return;
+    }
 
-  const mainWeather = weatherData.weather[0].main.toLowerCase();
-  const description = weatherData.weather[0].description;
-  const temp = convertTemp(weatherData.main.temp);
-  const city = location.city;
+    const mainWeather = weatherData.weather[0].main.toLowerCase();
+    const description = weatherData.weather[0].description;
+    const temp = convertTemp(weatherData.main.temp);
+    const city = location.city;
 
-  let title = "Today's Weather";
-  let message = `Weather in ${city}: ${description}, ${temp}°${unit}.`;
+    let title = "Today's Weather";
+    let message = `Weather in ${city}: ${description}, ${temp}°${unit}.`;
 
-  if (
-    mainWeather.includes("typhoon") ||
-    mainWeather.includes("storm") ||
-    mainWeather.includes("thunderstorm")
-  ) {
-    title = "⚠️ Typhoon/Storm Alert!";
-    message = `Severe weather in ${city}: ${description}. Stay safe!`;
-  } else if (mainWeather.includes("rain")) {
-    title = "🌧️ Rain Alert";
-    message = `Rain expected in ${city}: ${description}. Don't forget your umbrella!`;
-  } else if (mainWeather.includes("snow")) {
-    title = "❄️ Snow Alert";
-    message = `Snow in ${city}: ${description}. Dress warmly!`;
-  }
+    if (
+      mainWeather.includes("typhoon") ||
+      mainWeather.includes("storm") ||
+      mainWeather.includes("thunderstorm")
+    ) {
+      title = "⚠️ Typhoon/Storm Alert!";
+      message = `Severe weather in ${city}: ${description}. Stay safe!`;
+    } else if (mainWeather.includes("rain")) {
+      title = "🌧️ Rain Alert";
+      message = `Rain expected in ${city}: ${description}. Don't forget your umbrella!`;
+    } else if (mainWeather.includes("snow")) {
+      title = "❄️ Snow Alert";
+      message = `Snow in ${city}: ${description}. Dress warmly!`;
+    }
 
-  // Request permission if needed
-  if (window.Notification && Notification.permission !== "granted") {
-    Notification.requestPermission().then((permission) => {
-      if (permission === "granted") {
-        navigator.serviceWorker.ready.then((registration) => {
-          registration.showNotification(title, {
-            body: message,
-            icon: `/weather-icons/${weatherData.weather[0].icon}.png`,
-            badge: "/favicon.ico",
-            vibrate: [200, 100, 200],
+    // Request permission if needed
+    if (window.Notification && Notification.permission !== "granted") {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          navigator.serviceWorker.ready.then((registration) => {
+            registration.showNotification(title, {
+              body: message,
+              icon: `/weather-icons/${weatherData.weather[0].icon}.png`,
+              badge: "/favicon.ico",
+              vibrate: [200, 100, 200],
+            });
           });
-        });
-        toast.success("Weather notification sent!");
-      } else {
-        toast.info("Notification permission denied.");
-      }
-    });
-  } else if (window.Notification && Notification.permission === "granted") {
-    navigator.serviceWorker.ready.then((registration) => {
-      registration.showNotification(title, {
-        body: message,
-        icon: `/weather-icons/${weatherData.weather[0].icon}.png`,
-        badge: "/favicon.ico",
-        vibrate: [200, 100, 200],
+          toast.success("Weather notification sent!");
+        } else {
+          toast.info("Notification permission denied.");
+        }
       });
-    });
-    toast.success("Weather notification sent!");
-  } else {
-    toast.info(message);
-  }
-};
-
+    } else if (window.Notification && Notification.permission === "granted") {
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.showNotification(title, {
+          body: message,
+          icon: `/weather-icons/${weatherData.weather[0].icon}.png`,
+          badge: "/favicon.ico",
+          vibrate: [200, 100, 200],
+        });
+      });
+      toast.success("Weather notification sent!");
+    } else {
+      toast.info(message);
+    }
+  };
 
   if (locationLoading) {
     return (
